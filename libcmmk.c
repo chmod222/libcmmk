@@ -92,7 +92,7 @@ int cmmk_disable_control(struct cmmk *dev)
 	return send_command(dev->dev, data, sizeof(data));
 }
 
-static int cmmk_set_effect(struct cmmk *dev, int eff)
+static int set_effect1(struct cmmk *dev, int eff)
 {
 	unsigned char data[64] = {0x41, 0x01};
 
@@ -105,107 +105,115 @@ static int cmmk_set_effect(struct cmmk *dev, int eff)
 	return send_command(dev->dev, data, sizeof(data));
 }
 
-/*
- * TODO: Super in progress
- *
- *  Speed from slowest to fastest: 0x46, 0x41, 0x38, 0x3d, 0x27
- *
- * Format for 0x03 (SINGLE)                                   ON      OFF
- *  Speed 0: 51 2c 00 00 <EFF:03> <SPEED:46> 00 ff   ff ff 7f 7f 7f 80 80 80 ff ...
- *  Speed 1: 51 2c 00 00 <EFF:03> <SPEED:41> 00 ff   ff ff 7f 7f 7f 80 80 80 ff ...
- *  Speed 2: 51 2c 00 00 <EFF:03> <SPEED:38> 00 ff   ff ff 7f 7f 7f 80 80 80 ff ...
- *  Speed 3: 51 2c 00 00 <EFF:03> <SPEED:2d> 00 ff   ff ff 7f 7f 7f 80 80 80 ff ...
- *  Speed 4: 51 2c 00 00 <EFF:03> <SPEED:27> 00 ff   ff ff 7f 7f 7f 80 80 80 ff ...
- *
- * Format for 0x08 (RAINFALL)                                RAIN     SKY
- *           51 2c 00 00 <EFF:08> <SPEED:46> 00 10   FF FF 7f 7f 7f 80 80 80 FF ...
- *
- */
-#if 0
-enum cmmk_effect {
-	CMMK_EFF_FULLY_LIT = 0x00,
-	CMMK_EFF_BREATH = 0x01,
-	CMMK_EFF_BREATH_CYCLE = 0x02,
-	CMMK_EFF_SINGLE = 0x03,
-	CMMK_EFF_WAVE = 0x04,
-	CMMK_EFF_RIPPLE = 0x05,
-	CMMK_EFF_CROSS = 0x06,
-	CMMK_EFF_RAIN = 0x07,
-	CMMK_EFF_STAR = 0x08,
-	CMMK_EFF_SNAKE = 0x09,
-	CMMK_EFF_CUSTOMIZED = 0x0A,
 
-	/*
-	 * Only defined for mice
-	 *  CMMK_EFF_SPECTRUM = 0x0B,
-	 *  CMMK_EFF_RAPID_FIRE = 0x0C,
-	 *  CMMK_EFF_INDICATOR = 0x0C,
-	 */
+static int set_effect(
+	struct cmmk *dev,
+	int eff,
+	int p1, int p2, int p3,
+	struct rgb const *col1,
+	struct rgb const *col2)
+{
+	unsigned char data[64] = {
+		0x51, 0x2c, 0x00, 0x00, eff,  p1,   p2,   p3,
+		0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-	CMMK_EFF_MULTI1 = 0xE0,
-	CMMK_EFF_MULTI2 = 0xE1,
-	CMMK_EFF_MULTI3 = 0xE2,
-	CMMK_EFF_MULTI4 = 0xE3,
-	CMMK_EFF_OFF = 0xFE,
-};
-#endif
+	if (col1 != NULL) {
+		data[10] = col1->R;
+		data[11] = col1->G;
+		data[12] = col1->B;
+	}
+
+	if (col2 != NULL) {
+		data[13] = col2->R;
+		data[14] = col2->G;
+		data[15] = col2->B;
+	}
+
+	memset(data + 16, 0xff, 48);
+
+	set_effect1(dev, eff);
+
+	return send_command(dev->dev, data, sizeof(data));
+}
 
 int cmmk_set_effect_stars(struct cmmk *dev, int speed,
 		struct rgb const *star,
 		struct rgb const *sky)
 {
-	unsigned char data[64] = {
-		0x51, 0x2c, 0x00,    0x00,    0x08,    speed,  0x00,   0x0a,
-		0xff, 0xff, star->R, star->G, star->B, sky->R, sky->G, sky->B};
-
-	memset(data + 16, 0xff, 48);
-
-	cmmk_set_effect(dev, 0x08);
-
-	return send_command(dev->dev, data, sizeof(data));
+	return set_effect(dev, 0x08, speed, 0x00, 0x0a, star, sky);
 }
 
-int cmmk_set_effect_raindrop(struct cmmk *dev, int speed,
+int cmmk_set_effect_raindrops(struct cmmk *dev, int speed,
 		struct rgb const *drop,
 		struct rgb const *sky)
 {
-	unsigned char data[64] = {
-		0x51, 0x2c, 0x00,    0x00,    0x07,    speed,  0x00,   0x0a,
-		0xff, 0xff, drop->R, drop->G, drop->B, sky->R, sky->G, sky->B};
-
-	memset(data + 16, 0xff, 48);
-
-	cmmk_set_effect(dev, 0x07);
-
-	return send_command(dev->dev, data, sizeof(data));
+	return set_effect(dev, 0x07, speed, 0x00, 0x0a, drop, sky);
 }
 
 int cmmk_set_effect_fully_lit(struct cmmk *dev, struct rgb const *color)
 {
-	unsigned char data[64] = {
-		0x51, 0x2c, 0x00,    0x00,    0x00,    0x00,  0x00,   0xff,
-		0xff, 0xff, color->R, color->G, color->B, 0x00, 0x00, 0x00};
+	return set_effect(dev, 0x00, 0x00, 0x00, 0xff, color, NULL);
+}
 
-	memset(data + 16, 0xff, 48);
+int cmmk_set_effect_breathe(struct cmmk *dev, int speed, struct rgb const *color)
+{
+	return set_effect(dev, 0x01, speed, 0x00, 0xff, color, NULL);
+}
 
-	cmmk_set_effect(dev, 0x00);
+int cmmk_set_effect_wave(struct cmmk *dev, int speed, int direction, struct rgb const *color)
+{
+	return set_effect(dev, 0x04, speed, direction, 0xff, color, NULL);
+}
 
-	return send_command(dev->dev, data, sizeof(data));
+int cmmk_set_effect_ripple(struct cmmk *dev, int speed, struct rgb const *color)
+{
+	return set_effect(dev, 0x05, speed, (color == NULL) ? 0x80 : 0x00, 0xff, color, NULL);
 }
 
 int cmmk_set_effect_cross(struct cmmk *dev, int speed,
 		struct rgb const *active,
 		struct rgb const *rest)
 {
-	unsigned char data[64] = {
-		0x51, 0x2c, 0x00,      0x00,      0x06,      speed,   0x00,    0xff,
-		0xff, 0xff, active->R, active->G, active->B, rest->R, rest->G, rest->B};
+	return set_effect(dev, 0x06, speed, 0x00, 0xff, active, rest);
+}
 
-	memset(data + 16, 0xff, 48);
+int cmmk_set_effect_single(struct cmmk *dev, int speed,
+		struct rgb const *active,
+		struct rgb const *rest)
+{
+	return set_effect(dev, 0x03, speed, 0x00, 0xff, active, rest);
+}
 
-	cmmk_set_effect(dev, 0x06);
+int cmmk_set_effect_customized(struct cmmk *dev)
+{
+	return set_effect1(dev, 0x0A);
+}
 
-	return send_command(dev->dev, data, sizeof(data));
+int cmmk_set_effect_snake(struct cmmk *dev, int speed)
+{
+	return set_effect(dev, 0x09, speed, 0x00, 0xff, NULL, NULL);
+}
+
+int cmmk_set_effect_cycle(struct cmmk *dev, int speed)
+{
+	int speed_conv;
+
+	/* For some reason, this effect uses its own set of speedsteps */
+	switch (speed) {
+	case CMMK_SPEED0: speed_conv = 0x96; break;
+	case CMMK_SPEED1: speed_conv = 0x8c; break;
+	case CMMK_SPEED2: speed_conv = 0x80; break;
+	case CMMK_SPEED3: speed_conv = 0x6e; break;
+	case CMMK_SPEED4: speed_conv = 0x68; break;
+	default: return 1;
+	}
+
+	return set_effect(dev, 0x02, speed_conv, 0x00, 0xff, NULL, NULL);
+}
+
+int cmmk_set_effect_off(struct cmmk *dev)
+{
+	return set_effect1(dev, 0xFE);
 }
 
 /*

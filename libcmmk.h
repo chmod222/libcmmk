@@ -28,7 +28,14 @@ enum cmmk_effect_speed {
 	CMMK_SPEED1 = 0x41,
 	CMMK_SPEED2 = 0x38,
 	CMMK_SPEED3 = 0x3D,
-	CMMK_SPEED4 = 0x27,
+	CMMK_SPEED4 = 0x27
+};
+
+enum cmmk_wave_direction {
+	CMMK_LEFT_TO_RIGHT = 0x00,
+	CMMK_RIGHT_TO_LEFT = 0x04,
+	CMMK_BACK_TO_FRONT = 0x02,
+	CMMK_FRONT_TO_BACK = 0x06
 };
 
 /*
@@ -50,19 +57,37 @@ int cmmk_enable_control(struct cmmk *dev);
 int cmmk_disable_control(struct cmmk *dev);
 
 /* Predefined effects */
-int cmmk_set_effect_star(struct cmmk *dev, int speed,
+int cmmk_set_effect_stars(struct cmmk *dev, int speed,
 		struct rgb const *star,
 		struct rgb const *sky);
 
-int cmmk_set_effect_raindrop(struct cmmk *dev, int speed,
+int cmmk_set_effect_raindrops(struct cmmk *dev, int speed,
 		struct rgb const *drop,
 		struct rgb const *sky);
 
 int cmmk_set_effect_fully_lit(struct cmmk *dev, struct rgb const *color);
+int cmmk_set_effect_breathe(struct cmmk *dev, int speed, struct rgb const *color);
+
+int cmmk_set_effect_wave(struct cmmk *dev, int speed, int direction, struct rgb const *color);
+
+/* color == NULL => random */
+int cmmk_set_effect_ripple(struct cmmk *dev, int speed, struct rgb const *color);
 
 int cmmk_set_effect_cross(struct cmmk *dev, int speed,
 		struct rgb const *active,
 		struct rgb const *rest);
+
+int cmmk_set_effect_single(struct cmmk *dev, int speed,
+		struct rgb const *active,
+		struct rgb const *rest);
+
+int cmmk_set_effect_snake(struct cmmk *dev, int speed);
+int cmmk_set_effect_cycle(struct cmmk *dev, int speed);
+
+int cmmk_set_effect_off(struct cmmk *dev);
+
+/* manual lighting (default after enabling control mode) */
+int cmmk_set_effect_customized(struct cmmk *dev);
 
 /*
  * Translate row/col notation from the official SDK into a key code
