@@ -23,6 +23,13 @@ struct rgb {
 	unsigned char B;
 };
 
+enum cmmk_effect_speed {
+	CMMK_SPEED0 = 0x46,
+	CMMK_SPEED1 = 0x41,
+	CMMK_SPEED2 = 0x38,
+	CMMK_SPEED3 = 0x3D,
+	CMMK_SPEED4 = 0x27,
+};
 
 /*
  * Attach to and detach from USB device
@@ -41,6 +48,14 @@ int cmmk_detach(struct cmmk *state);
  */
 int cmmk_enable_control(struct cmmk *dev);
 int cmmk_disable_control(struct cmmk *dev);
+
+int cmmk_set_effect_star(struct cmmk *dev, int speed,
+		struct rgb const *star,
+		struct rgb const *sky);
+
+int cmmk_set_effect_raindrop(struct cmmk *dev, int speed,
+		struct rgb const *drop,
+		struct rgb const *sky);
 
 /*
  * Translate row/col notation from the official SDK into a key code

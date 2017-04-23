@@ -1,6 +1,8 @@
 #include "libcmmk.h"
 
 #include <unistd.h> /* getuid() */
+#include <string.h> /* memset() */
+
 #include <libusb-1.0/libusb.h>
 
 /* Some global definitions */
@@ -86,6 +88,94 @@ int cmmk_enable_control(struct cmmk *dev)
 int cmmk_disable_control(struct cmmk *dev)
 {
 	unsigned char data[64] = {0x41, 0x00};
+
+	return send_command(dev->dev, data, sizeof(data));
+}
+
+static int cmmk_set_effect(struct cmmk *dev, int eff)
+{
+	unsigned char data[64] = {0x41, 0x01};
+
+	send_command(dev->dev, data, sizeof(data));
+
+	data[0] = 0x51;
+	data[1] = 0x28;
+	data[4] = eff;
+
+	return send_command(dev->dev, data, sizeof(data));
+}
+
+/*
+ * TODO: Super in progress
+ *
+ *  Speed from slowest to fastest: 0x46, 0x41, 0x38, 0x3d, 0x27
+ *
+ * Format for 0x03 (SINGLE)                                   ON      OFF
+ *  Speed 0: 51 2c 00 00 <EFF:03> <SPEED:46> 00 ff   ff ff 7f 7f 7f 80 80 80 ff ...
+ *  Speed 1: 51 2c 00 00 <EFF:03> <SPEED:41> 00 ff   ff ff 7f 7f 7f 80 80 80 ff ...
+ *  Speed 2: 51 2c 00 00 <EFF:03> <SPEED:38> 00 ff   ff ff 7f 7f 7f 80 80 80 ff ...
+ *  Speed 3: 51 2c 00 00 <EFF:03> <SPEED:2d> 00 ff   ff ff 7f 7f 7f 80 80 80 ff ...
+ *  Speed 4: 51 2c 00 00 <EFF:03> <SPEED:27> 00 ff   ff ff 7f 7f 7f 80 80 80 ff ...
+ *
+ * Format for 0x08 (RAINFALL)                                RAIN     SKY
+ *           51 2c 00 00 <EFF:08> <SPEED:46> 00 10   FF FF 7f 7f 7f 80 80 80 FF ...
+ *
+ */
+#if 0
+enum cmmk_effect {
+	CMMK_EFF_FULLY_LIT = 0x00,
+	CMMK_EFF_BREATH = 0x01,
+	CMMK_EFF_BREATH_CYCLE = 0x02,
+	CMMK_EFF_SINGLE = 0x03,
+	CMMK_EFF_WAVE = 0x04,
+	CMMK_EFF_RIPPLE = 0x05,
+	CMMK_EFF_CROSS = 0x06,
+	CMMK_EFF_RAIN = 0x07,
+	CMMK_EFF_STAR = 0x08,
+	CMMK_EFF_SNAKE = 0x09,
+	CMMK_EFF_CUSTOMIZED = 0x0A,
+
+	/*
+	 * Only defined for mice
+	 *  CMMK_EFF_SPECTRUM = 0x0B,
+	 *  CMMK_EFF_RAPID_FIRE = 0x0C,
+	 *  CMMK_EFF_INDICATOR = 0x0C,
+	 */
+
+	CMMK_EFF_MULTI1 = 0xE0,
+	CMMK_EFF_MULTI2 = 0xE1,
+	CMMK_EFF_MULTI3 = 0xE2,
+	CMMK_EFF_MULTI4 = 0xE3,
+	CMMK_EFF_OFF = 0xFE,
+};
+#endif
+
+int cmmk_set_effect_stars(struct cmmk *dev, int speed,
+		struct rgb const *star,
+		struct rgb const *sky)
+{
+	unsigned char data[64] = {
+		0x51, 0x2c, 0x00,    0x00,    0x08,    speed,  0x00,   0x0a,
+		0xff, 0xff, star->R, star->G, star->B, sky->R, sky->G, sky->B};
+
+	memset(data + 16, 0xff, 64 - 16);
+
+	cmmk_set_effect(dev, 0x08);
+
+	return send_command(dev->dev, data, sizeof(data));
+}
+
+int cmmk_set_effect_raindrop(struct cmmk *dev, int speed,
+		struct rgb const *drop,
+		struct rgb const *sky)
+{
+	unsigned char data[64] = {
+		0x51, 0x2c, 0x00,    0x00,    0x07,    speed,  0x00,   0x0a,
+		0xff, 0xff, drop->R, drop->G, drop->B, sky->R, sky->G, sky->B};
+
+	memset(data + 16, 0xff, 64 - 16);
+
+	cmmk_set_effect(dev, 0x07);
 
 	return send_command(dev->dev, data, sizeof(data));
 }
