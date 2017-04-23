@@ -1,0 +1,13 @@
+An unofficial implementation of the Masterkey Lighting API that can be used
+to programmatically control LEDs of Coolermaster Masterkey keyboards.
+
+Based entirely on captured USB data without any reverse engineering performed
+on official binaries.
+
+Due to a lack of hardware available for testing, the only currently supported
+model is the EU / German version of the Masterkeys L edition.
+
+
+Requirements:
+  - A C compiler from at least the current century (C99)
+  - libusb-1.0
