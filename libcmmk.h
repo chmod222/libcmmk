@@ -43,6 +43,11 @@ int cmmk_enable_control(struct cmmk *dev);
 int cmmk_disable_control(struct cmmk *dev);
 
 /*
+ * Translate row/col notation from the official SDK into a key code
+ */
+int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col);
+
+/*
  * Set the single key `key' (indized via enum cmmk_keycode) to the given color.
  */
 int cmmk_set_single_key(struct cmmk *dev, int key, struct rgb const *col);

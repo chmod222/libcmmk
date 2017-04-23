@@ -14,12 +14,6 @@ enum {
 	CMMK_USB_EP_OUT = 0x83
 };
 
-/*
- * TODO:
- *	- Function for converting the official SDK row/col coordinates to keymap entries
- */
-
-
 static int send_command(libusb_device_handle *dev, unsigned char *data, size_t datasiz)
 {
 	int tx;
@@ -96,6 +90,36 @@ int cmmk_disable_control(struct cmmk *dev)
 	return send_command(dev->dev, data, sizeof(data));
 }
 
+/*
+ * Translate row/col notation from the official SDK into a key code
+ */
+int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col)
+{
+	(void)dev; /* TODO: use device information to determine layout */
+
+	/* Model: MK Pro L [Black/White] EU/Ger */
+	int map[6][22] = {
+		{K_ESC, K_F1, K_F2, K_F3, K_F4, -1, K_F5, K_F6, K_F7, K_F8, -1, K_F9, K_F10, K_F11, K_F12,
+		 K_PRTSCR, K_SCRLCK, K_PAUSE, K_P1, K_P2, K_P3, K_P4},
+
+		{K_CARRET, K_1, K_2, K_3, K_4, K_5, K_6, K_7, K_8, K_9, K_0, K_QUESTION, K_TICK, -1,
+		 K_BACKSPACE, K_INS, K_HOME, K_PGUP, K_NUMLCK, K_NUMDIV, K_NUMMULT, K_NUMMINUS},
+
+		{K_TAB, K_Q, K_W, K_E, K_R, K_T, K_Y, K_U, K_I, K_O, K_P, K_UE, K_PLUS, -1, K_ENTER,
+		 K_DEL, K_END, K_PGDWN, K_NUM7, K_NUM8, K_NUM9, K_NUMPLUS},
+
+		{K_CAPSLCK, K_A, K_S, K_D, K_F, K_G, K_H, K_J, K_K, K_L, K_OE, K_AE, K_HASH, -1, -1,
+		 -1, -1, -1, K_NUM4, K_NUM5, K_NUM6, -1},
+
+		{K_LSHIFT, K_ANGLE_BRACKET, K_Y, K_X, K_C, K_V, K_B, K_N, K_M, K_COMMA, K_PERIOD, K_HYPHEN,
+		 1, -1, K_RSHIFT, -1, K_ARROW_UP, -1, K_NUM1, K_NUM2, K_NUM3, K_NUMENTER},
+
+		{K_LCTRL, K_LWIN, K_LALT, -1, -1, -1, K_SPACE, -1, -1, -1, K_ALTGR, K_RWIN, K_FN, -1,
+		 K_RCTRL, K_ARROW_LEFT, K_ARROW_DOWN, K_ARROW_LEFT, K_NUM0, -1, K_NUMDEL, -1}
+	};
+
+	return map[row][col];
+}
 
 /*
  * Set the single key `key' (indized via enum cmmk_keycode) to the given color.
