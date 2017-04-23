@@ -86,7 +86,6 @@ int cmmk_set_effect_cycle(struct cmmk *dev, int speed);
 
 int cmmk_set_effect_off(struct cmmk *dev);
 
-/* manual lighting (default after enabling control mode) */
 int cmmk_set_effect_customized(struct cmmk *dev);
 
 /*
