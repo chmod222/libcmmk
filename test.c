@@ -2,8 +2,19 @@
 
 #include <unistd.h> /* sleep() */
 
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+
+int g_stop = 0;
+
+static void interrupted(int sig)
+{
+	(void)sig;
+
+	g_stop = 1;
+}
 
 int main(int argc, char** argv)
 {
@@ -17,9 +28,14 @@ int main(int argc, char** argv)
 
 	cmmk_enable_control(&state);
 
-	cmmk_set_effect_cycle(&state, CMMK_SPEED4);
+	signal(SIGINT, interrupted);
 
-	sleep(5);
+	cmmk_set_effect_raindrops(&state, CMMK_SPEED4,
+			&(struct rgb){ 0xFF, 0xFF, 0x00},
+			&(struct rgb){ 000, 0x00, 0x00});
+
+	while (!g_stop)
+		sleep(1);
 
 	cmmk_disable_control(&state);
 	cmmk_detach(&state);
