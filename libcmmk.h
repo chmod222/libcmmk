@@ -49,6 +49,7 @@ int cmmk_detach(struct cmmk *state);
 int cmmk_enable_control(struct cmmk *dev);
 int cmmk_disable_control(struct cmmk *dev);
 
+/* Predefined effects */
 int cmmk_set_effect_star(struct cmmk *dev, int speed,
 		struct rgb const *star,
 		struct rgb const *sky);
@@ -56,6 +57,12 @@ int cmmk_set_effect_star(struct cmmk *dev, int speed,
 int cmmk_set_effect_raindrop(struct cmmk *dev, int speed,
 		struct rgb const *drop,
 		struct rgb const *sky);
+
+int cmmk_set_effect_fully_lit(struct cmmk *dev, struct rgb const *color);
+
+int cmmk_set_effect_cross(struct cmmk *dev, int speed,
+		struct rgb const *active,
+		struct rgb const *rest);
 
 /*
  * Translate row/col notation from the official SDK into a key code

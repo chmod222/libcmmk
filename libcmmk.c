@@ -158,7 +158,7 @@ int cmmk_set_effect_stars(struct cmmk *dev, int speed,
 		0x51, 0x2c, 0x00,    0x00,    0x08,    speed,  0x00,   0x0a,
 		0xff, 0xff, star->R, star->G, star->B, sky->R, sky->G, sky->B};
 
-	memset(data + 16, 0xff, 64 - 16);
+	memset(data + 16, 0xff, 48);
 
 	cmmk_set_effect(dev, 0x08);
 
@@ -173,9 +173,37 @@ int cmmk_set_effect_raindrop(struct cmmk *dev, int speed,
 		0x51, 0x2c, 0x00,    0x00,    0x07,    speed,  0x00,   0x0a,
 		0xff, 0xff, drop->R, drop->G, drop->B, sky->R, sky->G, sky->B};
 
-	memset(data + 16, 0xff, 64 - 16);
+	memset(data + 16, 0xff, 48);
 
 	cmmk_set_effect(dev, 0x07);
+
+	return send_command(dev->dev, data, sizeof(data));
+}
+
+int cmmk_set_effect_fully_lit(struct cmmk *dev, struct rgb const *color)
+{
+	unsigned char data[64] = {
+		0x51, 0x2c, 0x00,    0x00,    0x00,    0x00,  0x00,   0xff,
+		0xff, 0xff, color->R, color->G, color->B, 0x00, 0x00, 0x00};
+
+	memset(data + 16, 0xff, 48);
+
+	cmmk_set_effect(dev, 0x00);
+
+	return send_command(dev->dev, data, sizeof(data));
+}
+
+int cmmk_set_effect_cross(struct cmmk *dev, int speed,
+		struct rgb const *active,
+		struct rgb const *rest)
+{
+	unsigned char data[64] = {
+		0x51, 0x2c, 0x00,      0x00,      0x06,      speed,   0x00,    0xff,
+		0xff, 0xff, active->R, active->G, active->B, rest->R, rest->G, rest->B};
+
+	memset(data + 16, 0xff, 48);
+
+	cmmk_set_effect(dev, 0x06);
 
 	return send_command(dev->dev, data, sizeof(data));
 }

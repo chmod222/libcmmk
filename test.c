@@ -17,10 +17,10 @@ int main(int argc, char** argv)
 
 	cmmk_enable_control(&state);
 
-	cmmk_set_effect_raindrop(&state,
+	cmmk_set_effect_cross(&state,
 			CMMK_SPEED4,
-			&(struct rgb){0xFF, 0xFF, 0x00},
-			&(struct rgb){0x00, 0x00, 0x00});
+			&(struct rgb){0xFF, 0x00, 0x00},
+			&(struct rgb){0xFF, 0xFF, 0xFF});
 
 	sleep(5);
 
