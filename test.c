@@ -29,9 +29,7 @@ int main(int argc, char** argv)
 		return 1;
 
 	cmmk_set_control_mode(&state, CMMK_EFFECT);
-	cmmk_set_effect_raindrops(&state, CMMK_SPEED0,
-			&(struct rgb) {0xFF, 0x00, 0xFF },
-			&(struct rgb) { 0x00, 0x00, 0x00 });
+	cmmk_set_effect_raindrops(&state, CMMK_SPEED0, &MKRGB(0xFF00FF), &MKRGB(0x000000));
 
 	signal(SIGINT, interrupted);
 
