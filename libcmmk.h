@@ -38,6 +38,20 @@ enum cmmk_wave_direction {
 	CMMK_FRONT_TO_BACK = 0x06
 };
 
+enum cmmk_control_mode {
+	/* Firmware controls everything */
+	CMMK_FIRMWARE = 0x00,
+
+	/* Firmware controlled effect, configured via software */
+	CMMK_EFFECT = 0x01,
+
+	/* Manual control of everything */
+	CMMK_MANUAL = 0x02,
+
+	/* Profile setup */
+	CMMK_PROFILE_CUSTOMIZATION = 0x03
+};
+
 /*
  * Attach to and detach from USB device
  */
@@ -51,22 +65,25 @@ int cmmk_detach(struct cmmk *state);
 
 /*
  * Enter and leave direct control mode. Any control commands outside of control
- * mode are ignored.
+ * mode are ignored. Enabling control mode while inside control mode will reset
+ * active effect and allow direct control over LEDs.
  */
-int cmmk_enable_control(struct cmmk *dev);
-int cmmk_disable_control(struct cmmk *dev);
+int cmmk_set_control_mode(struct cmmk *dev, int mode);
+
+/* Only possible in profile mode */
+int cmmk_set_active_profile(struct cmmk *dev, int prof);
+int cmmk_get_active_profile(struct cmmk *dev);
 
 /* Predefined effects */
-int cmmk_set_effect_stars(struct cmmk *dev, int speed,
-		struct rgb const *star,
-		struct rgb const *sky);
-
-int cmmk_set_effect_raindrops(struct cmmk *dev, int speed,
-		struct rgb const *drop,
-		struct rgb const *sky);
-
 int cmmk_set_effect_fully_lit(struct cmmk *dev, struct rgb const *color);
+
 int cmmk_set_effect_breathe(struct cmmk *dev, int speed, struct rgb const *color);
+
+int cmmk_set_effect_cycle(struct cmmk *dev, int speed);
+
+int cmmk_set_effect_single(struct cmmk *dev, int speed,
+		struct rgb const *active,
+		struct rgb const *rest);
 
 int cmmk_set_effect_wave(struct cmmk *dev, int speed, int direction, struct rgb const *color);
 
@@ -77,16 +94,18 @@ int cmmk_set_effect_cross(struct cmmk *dev, int speed,
 		struct rgb const *active,
 		struct rgb const *rest);
 
-int cmmk_set_effect_single(struct cmmk *dev, int speed,
-		struct rgb const *active,
-		struct rgb const *rest);
+int cmmk_set_effect_raindrops(struct cmmk *dev, int speed,
+		struct rgb const *drop,
+		struct rgb const *sky);
+
+
+int cmmk_set_effect_stars(struct cmmk *dev, int speed,
+		struct rgb const *star,
+		struct rgb const *sky);
 
 int cmmk_set_effect_snake(struct cmmk *dev, int speed);
-int cmmk_set_effect_cycle(struct cmmk *dev, int speed);
-
-int cmmk_set_effect_off(struct cmmk *dev);
-
 int cmmk_set_effect_customized(struct cmmk *dev);
+int cmmk_set_effect_off(struct cmmk *dev);
 
 /*
  * Translate row/col notation from the official SDK into a key code

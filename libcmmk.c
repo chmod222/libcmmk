@@ -78,18 +78,28 @@ int cmmk_detach(struct cmmk *state)
  * Enter and leave direct control mode. Any control commands outside of control
  * mode are ignored.
  */
-int cmmk_enable_control(struct cmmk *dev)
+int cmmk_set_control_mode(struct cmmk *dev, int mode)
 {
-	unsigned char data[64] = {0x41, 0x02};
+	unsigned char data[64] = {0x41, mode};
 
 	return send_command(dev->dev, data, sizeof(data));
 }
 
-int cmmk_disable_control(struct cmmk *dev)
+int cmmk_set_active_profile(struct cmmk *dev, int prof)
 {
-	unsigned char data[64] = {0x41, 0x00};
+	unsigned char setprof[64] = {0x51, 0x00, 0x00, 0x00, prof};
 
-	return send_command(dev->dev, data, sizeof(data));
+	return send_command(dev->dev, setprof, sizeof(setprof));
+}
+
+int cmmk_get_active_profile(struct cmmk *dev)
+{
+	unsigned char getprof[64] = {0x52, 0x00};
+
+	if (send_command(dev->dev, getprof, sizeof(getprof)) != 0)
+		return -1;
+
+	return getprof[4];
 }
 
 static int set_effect1(struct cmmk *dev, int eff)
@@ -136,20 +146,6 @@ static int set_effect(
 	return send_command(dev->dev, data, sizeof(data));
 }
 
-int cmmk_set_effect_stars(struct cmmk *dev, int speed,
-		struct rgb const *star,
-		struct rgb const *sky)
-{
-	return set_effect(dev, 0x08, speed, 0x00, 0x0a, star, sky);
-}
-
-int cmmk_set_effect_raindrops(struct cmmk *dev, int speed,
-		struct rgb const *drop,
-		struct rgb const *sky)
-{
-	return set_effect(dev, 0x07, speed, 0x00, 0x0a, drop, sky);
-}
-
 int cmmk_set_effect_fully_lit(struct cmmk *dev, struct rgb const *color)
 {
 	return set_effect(dev, 0x00, 0x00, 0x00, 0xff, color, NULL);
@@ -158,6 +154,30 @@ int cmmk_set_effect_fully_lit(struct cmmk *dev, struct rgb const *color)
 int cmmk_set_effect_breathe(struct cmmk *dev, int speed, struct rgb const *color)
 {
 	return set_effect(dev, 0x01, speed, 0x00, 0xff, color, NULL);
+}
+
+int cmmk_set_effect_cycle(struct cmmk *dev, int speed)
+{
+	int speed_conv;
+
+	/* For some reason, this effect uses its own set of speedsteps */
+	switch (speed) {
+	case CMMK_SPEED0: speed_conv = 0x96; break;
+	case CMMK_SPEED1: speed_conv = 0x8c; break;
+	case CMMK_SPEED2: speed_conv = 0x80; break;
+	case CMMK_SPEED3: speed_conv = 0x6e; break;
+	case CMMK_SPEED4: speed_conv = 0x68; break;
+	default: return 1;
+	}
+
+	return set_effect(dev, 0x02, speed_conv, 0x00, 0xff, NULL, NULL);
+}
+
+int cmmk_set_effect_single(struct cmmk *dev, int speed,
+		struct rgb const *active,
+		struct rgb const *rest)
+{
+	return set_effect(dev, 0x03, speed, 0x00, 0xff, active, rest);
 }
 
 int cmmk_set_effect_wave(struct cmmk *dev, int speed, int direction, struct rgb const *color)
@@ -177,16 +197,18 @@ int cmmk_set_effect_cross(struct cmmk *dev, int speed,
 	return set_effect(dev, 0x06, speed, 0x00, 0xff, active, rest);
 }
 
-int cmmk_set_effect_single(struct cmmk *dev, int speed,
-		struct rgb const *active,
-		struct rgb const *rest)
+int cmmk_set_effect_raindrops(struct cmmk *dev, int speed,
+		struct rgb const *drop,
+		struct rgb const *sky)
 {
-	return set_effect(dev, 0x03, speed, 0x00, 0xff, active, rest);
+	return set_effect(dev, 0x07, speed, 0x00, 0x0a, drop, sky);
 }
 
-int cmmk_set_effect_customized(struct cmmk *dev)
+int cmmk_set_effect_stars(struct cmmk *dev, int speed,
+		struct rgb const *star,
+		struct rgb const *sky)
 {
-	return set_effect1(dev, 0x0A);
+	return set_effect(dev, 0x08, speed, 0x00, 0x0a, star, sky);
 }
 
 int cmmk_set_effect_snake(struct cmmk *dev, int speed)
@@ -194,21 +216,9 @@ int cmmk_set_effect_snake(struct cmmk *dev, int speed)
 	return set_effect(dev, 0x09, speed, 0x00, 0xff, NULL, NULL);
 }
 
-int cmmk_set_effect_cycle(struct cmmk *dev, int speed)
+int cmmk_set_effect_customized(struct cmmk *dev)
 {
-	int speed_conv;
-
-	/* For some reason, this effect uses its own set of speedsteps */
-	switch (speed) {
-	case CMMK_SPEED0: speed_conv = 0x96; break;
-	case CMMK_SPEED1: speed_conv = 0x8c; break;
-	case CMMK_SPEED2: speed_conv = 0x80; break;
-	case CMMK_SPEED3: speed_conv = 0x6e; break;
-	case CMMK_SPEED4: speed_conv = 0x68; break;
-	default: return 1;
-	}
-
-	return set_effect(dev, 0x02, speed_conv, 0x00, 0xff, NULL, NULL);
+	return set_effect1(dev, 0x0A);
 }
 
 int cmmk_set_effect_off(struct cmmk *dev)
@@ -252,7 +262,7 @@ int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col)
  */
 int cmmk_set_single_key(struct cmmk *dev, int key, struct rgb const *col)
 {
-	unsigned char data[64] = {0xc0, 0x01, 0x01, 0x00, key, col->R, col->G, col->B};
+	unsigned char data[64] = {0xc0, 0x01, 0x00, 0x00, key, col->R, col->G, col->B};
 
 	return send_command(dev->dev, data, sizeof(data));
 }
