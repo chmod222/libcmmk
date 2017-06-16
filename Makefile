@@ -1,17 +1,18 @@
-CC=cc
+CC=gcc
 CFLAGS=-Wall -Wextra -std=c99 -fPIC
 LDFLAGS=-lusb-1.0
 
-test: libcmmk.o test.o
-	${CC} ${LDFLAGS} $^ -o $@
+cmmk-test: libcmmk.o test.o
+	${CC} -s $^ -o out/$@ ${LDFLAGS}
 
-staticlib: libcmmk.o
-	ar rcs libcmmk.a $^
+libcmmk: libcmmk.o
+	mkdir -p out
+	ar rcs out/libcmmk.a $^
+	${CC} -s -shared $^ -o out/$@.so
 
-test.o: test.c
 libcmmk.o: libcmmk.h libcmmk.c
+test.o: test.c
 
 clean:
-	rm *.a
-	rm *.o
-	rm test
+	rm -f *.o
+	rm -rf out

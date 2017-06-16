@@ -37,8 +37,9 @@ int main(int argc, char** argv)
 		sleep(1);
 	}
 
+	cmmk_set_active_profile(&state, 1);
 	cmmk_set_control_mode(&state, CMMK_FIRMWARE);
 	cmmk_detach(&state);
-	
+
 	return 0;
 }
