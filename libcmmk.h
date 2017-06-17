@@ -21,12 +21,12 @@
  * If we have C99 support (which we do, because libusb-1.0 requires it...), define some handy
  * macros.
  */
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-/* struct rgb from 0xRRGGBB */
-#	define MKRGB(hex) (struct rgb){((hex) >> 16) & 0xFF, ((hex) >> 8) & 0xFF, (hex) & 0xFF }
+#if __STDC_VERSION__ >= 199901L
+	/* struct rgb from 0xRRGGBB */
+	#define MKRGB(hex) (struct rgb){((hex) >> 16) & 0xFF, ((hex) >> 8) & 0xFF, (hex) & 0xFF }
 
-/* struct rgb from single parts */
-#	define MKRGBS(r, g, b) (struct rgb){ (r), (g), (b) }
+	/* struct rgb from single parts */
+	#define MKRGBS(r, g, b) (struct rgb){ (r), (g), (b) }
 #endif
 
 struct rgb {
