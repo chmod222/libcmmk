@@ -1,9 +1,9 @@
 CC=gcc
 CFLAGS=-s -Wall -Wextra -std=c99 -fPIC
-LDFLAGS=-lusb-1.0
+LDFLAGS=-lusb-1.0 -lcmmk -Lout/
 
-cmmk-test: libcmmk.o test.o
-	${CC} ${CFLAGS} $^ -o out/$@ ${LDFLAGS}
+cmmk-test: libcmmk test.o
+	${CC} ${CFLAGS} test.o -o out/$@ ${LDFLAGS}
 
 libcmmk: libcmmk.o
 	mkdir -p out
