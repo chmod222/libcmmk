@@ -262,7 +262,7 @@ int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col)
  */
 int cmmk_set_single_key(struct cmmk *dev, int key, struct rgb const *col)
 {
-	unsigned char data[64] = {0xc0, 0x01, 0x00, 0x00, key, col->R, col->G, col->B};
+	unsigned char data[64] = {0xc0, 0x01, 0x01, 0x00, key, col->R, col->G, col->B};
 
 	return send_command(dev->dev, data, sizeof(data));
 }
