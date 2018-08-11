@@ -6,7 +6,7 @@
 #define CMMK_LAYOUT_EU 1 /* keymap_eu.h */
 #define CMMK_LAYOUT_US 2 /* keymap_us.h, XXX: needs outside help for this one */
 
-#define CMMK_LAYOUT CMMK_LAYOUT_EU
+#define CMMK_LAYOUT CMMK_LAYOUT_US
 
 /* Include correct keymap */
 #if CMMK_LAYOUT == CMMK_LAYOUT_EU
@@ -33,6 +33,11 @@ struct rgb {
 	unsigned char R;
 	unsigned char G;
 	unsigned char B;
+};
+
+enum cmmk_product {
+	CMMK_USB_MASTERKEYS_PRO_L = 0x003b,
+	CMMK_USB_MASTERKEYS_PRO_S = 0x003c
 };
 
 enum cmmk_effect_speed {
@@ -70,9 +75,10 @@ enum cmmk_control_mode {
 struct cmmk {
 	libusb_context *cxt;
 	libusb_device_handle *dev;
+	int product;
 };
 
-int cmmk_attach(struct cmmk *state);
+int cmmk_attach(struct cmmk *state, int product);
 int cmmk_detach(struct cmmk *state);
 
 /*

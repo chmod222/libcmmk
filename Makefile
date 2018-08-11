@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-s -Wall -Wextra -std=c99 -fPIC
-LDFLAGS=-lusb-1.0 -lcmmk -Lout/
+LDFLAGS=-lcmmk -lusb-1.0 -Lout/
 
 cmmk-test: libcmmk test.o
 	${CC} ${CFLAGS} test.o -o out/$@ ${LDFLAGS}

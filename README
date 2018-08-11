@@ -11,3 +11,24 @@ model is the EU / German version of the Masterkeys L edition.
 Requirements:
   - A C compiler from at least the current century (C99)
   - libusb-1.0
+
+
+# Ubuntu
+
+## Install dependencies
+
+```
+sudo apt-get install libusb-1.0-0-dev
+```
+
+## Compile and run:
+
+```
+make clean && make
+```
+
+Requires root:
+
+```
+sudo LD_LIBRARY_PATH=/path/to/out/subdirectory/out:$LD_LIBRARY_PATH ./out/cmmk-testsu
+```
