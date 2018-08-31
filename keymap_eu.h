@@ -1,17 +1,17 @@
 enum cmmk_keycode {
 	// top row
-	K_CARRET = 0,
-	K_0 = 40,
-	K_1 = 1,
-	K_2 = 8,
-	K_3 = 9,
-	K_4 = 16,
-	K_5 = 17,
-	K_6 = 24,
-	K_7 = 25,
-	K_8 = 32,
-	K_9 = 33,
-	K_QUESTION = 46,
+	K_CARRET = 14,
+	K_0 = 71,
+	K_1 = 15,
+	K_2 = 23,
+	K_3 = 31,
+	K_4 = 39,
+	K_5 = 38,
+	K_6 = 46,
+	K_7 = 47,
+	K_8 = 55,
+	K_9 = 63,
+	K_QUESTION = 70,
 	K_TICK = 54,
 
 	K_PLUS = 49,
@@ -135,4 +135,3 @@ enum cmmk_keycode {
 	K_PAUSE = 0,
 
 };
-
