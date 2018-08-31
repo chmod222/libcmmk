@@ -235,7 +235,7 @@ int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col)
 	//(void)dev; /* TODO: use device information to determine layout */
 
 	if (dev->product == CMMK_USB_MASTERKEYS_PRO_S) {
-		/* Model: MK Pro S [Black/White] EU */
+		/* Model: MK Pro S [Black/White] US */
 		int map[6][22] = {
 			{K_ESC, K_F1, K_F2, K_F3, K_F4, -1, K_F5, K_F6, K_F7, K_F8, -1, K_F9, K_F10, K_F11, K_F12,
 			K_PRTSCR, K_SCRLCK, K_PAUSE, -1, -1, -1, -1},
