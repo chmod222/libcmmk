@@ -5,6 +5,19 @@
 
 #include <libusb-1.0/libusb.h>
 
+/* Initialize keyboard layouts */
+typedef int8_t keyboard_layout[6][22];
+
+#include "keymap_eu.h"
+#include "keymap_us.h"
+
+static keyboard_layout const *keyboard_layouts[] = {
+	[CMMK_LAYOUT_US_S] = &layout_us_s,
+	[CMMK_LAYOUT_US_L] = &layout_us_l,
+	[CMMK_LAYOUT_EU_S] = &layout_eu_s,
+	[CMMK_LAYOUT_EU_L] = &layout_eu_l
+};
+
 /* Some global definitions */
 enum {
 	CMMK_USB_VENDOR = 0x2516,
@@ -31,7 +44,7 @@ static int send_command(libusb_device_handle *dev, unsigned char *data, size_t d
 /*
  * Attach to and detach from USB device
  */
-int cmmk_attach(struct cmmk *state, int product)
+int cmmk_attach(struct cmmk *state, int product, int layout)
 {
 	if (getuid() != 0)
 		return 1;
@@ -45,6 +58,7 @@ int cmmk_attach(struct cmmk *state, int product)
 			product);
 
 	state->product = product;
+	state->layout = layout;
 
 	if (state->dev == NULL)
 		goto out_step1;
@@ -227,61 +241,11 @@ int cmmk_set_effect_off(struct cmmk *dev)
 	return set_effect1(dev, 0xFE);
 }
 
-/*
- * Translate row/col notation from the official SDK into a key code
- */
 int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col)
 {
-	//(void)dev; /* TODO: use device information to determine layout */
+	keyboard_layout const *layout = keyboard_layouts[dev->layout];
 
-	if (dev->product == CMMK_USB_MASTERKEYS_PRO_S) {
-		/* Model: MK Pro S [Black/White] US */
-		int map[6][22] = {
-			{K_ESC, K_F1, K_F2, K_F3, K_F4, -1, K_F5, K_F6, K_F7, K_F8, -1, K_F9, K_F10, K_F11, K_F12,
-			K_PRTSCR, K_SCRLCK, K_PAUSE, -1, -1, -1, -1},
-
-			{K_TICK, K_1, K_2, K_3, K_4, K_5, K_6, K_7, K_8, K_9, K_0, K_HYPHEN, K_PLUS, -1,
-			K_BACKSPACE, K_INS, K_HOME, K_PGUP, -1, -1, -1, -1},
-
-			{K_TAB, K_Q, K_W, K_E, K_R, K_T, K_Y, K_U, K_I, K_O, K_P, K_LSQUARE_BRACKET, K_RSQUARE_BRACKET, -1, K_BACK_SLASH,
-			K_DEL, K_END, K_PGDWN, -1, -1, -1, -1},
-
-			{K_CAPSLCK, K_A, K_S, K_D, K_F, K_G, K_H, K_J, K_K, K_L, K_SEMICOLON, K_QUOTE, K_ENTER, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1},
-
-			{K_LSHIFT, -1, K_Z, K_X, K_C, K_V, K_B, K_N, K_M, K_COMMA, K_PERIOD, K_FORWARD_SLASH,
-			K_RSHIFT, -1, -1, -1, K_ARROW_UP, -1, -1, -1, -1, -1},
-
-			{K_LCTRL, K_LWIN, K_LALT, -1, -1, -1, K_SPACE, -1, -1, -1, K_ALTGR, K_RWIN, K_FN, -1,
-			K_RCTRL, K_ARROW_LEFT, K_ARROW_DOWN, K_ARROW_RIGHT, -1, -1, -1, -1}
-		};
-
-		return map[row][col];
-	} else {
-		/* Model: MK Pro L [Black/White] EU/Ger */
-		int map[6][22] = {
-			{K_ESC, K_F1, K_F2, K_F3, K_F4, -1, K_F5, K_F6, K_F7, K_F8, -1, K_F9, K_F10, K_F11, K_F12,
-			K_PRTSCR, K_SCRLCK, K_PAUSE, K_P1, K_P2, K_P3, K_P4},
-
-			{K_CARRET, K_1, K_2, K_3, K_4, K_5, K_6, K_7, K_8, K_9, K_0, K_QUESTION, K_TICK, -1,
-			K_BACKSPACE, K_INS, K_HOME, K_PGUP, K_NUMLCK, K_NUMDIV, K_NUMMULT, K_NUMMINUS},
-
-			{K_TAB, K_Q, K_W, K_E, K_R, K_T, K_Y, K_U, K_I, K_O, K_P, K_UE, K_PLUS, -1, K_ENTER,
-			K_DEL, K_END, K_PGDWN, K_NUM7, K_NUM8, K_NUM9, K_NUMPLUS},
-
-			{K_CAPSLCK, K_A, K_S, K_D, K_F, K_G, K_H, K_J, K_K, K_L, K_OE, K_AE, K_HASH, -1, -1,
-			-1, -1, -1, K_NUM4, K_NUM5, K_NUM6, -1},
-
-			{K_LSHIFT, K_ANGLE_BRACKET, K_Y, K_X, K_C, K_V, K_B, K_N, K_M, K_COMMA, K_PERIOD, K_HYPHEN,
-			1, -1, K_RSHIFT, -1, K_ARROW_UP, -1, K_NUM1, K_NUM2, K_NUM3, K_NUMENTER},
-
-			{K_LCTRL, K_LWIN, K_LALT, -1, -1, -1, K_SPACE, -1, -1, -1, K_ALTGR, K_RWIN, K_FN, -1,
-			K_RCTRL, K_ARROW_LEFT, K_ARROW_DOWN, K_ARROW_LEFT, K_NUM0, -1, K_NUMDEL, -1}
-		};
-
-		return map[row][col];
-	}
-
+	return (*layout)[row][col];
 }
 
 /*

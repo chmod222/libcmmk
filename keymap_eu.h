@@ -1,137 +1,30 @@
-enum cmmk_keycode {
-	// top row
-	K_CARRET = 14,
-	K_0 = 71,
-	K_1 = 15,
-	K_2 = 23,
-	K_3 = 31,
-	K_4 = 39,
-	K_5 = 38,
-	K_6 = 46,
-	K_7 = 47,
-	K_8 = 55,
-	K_9 = 63,
-	K_QUESTION = 70,
-	K_TICK = 54,
+/* XXX = unassigned */
+static keyboard_layout layout_eu_s = {
+	{-1}, {-1}, {-1}, {-1}, {-1}, {-1}
+};
 
-	K_PLUS = 49,
-	K_HYPHEN = 69,
+static keyboard_layout layout_eu_l = {
+	/*
+	 ESC  F1   F2   F3   F4  XXX  F5   F6   F7   F8  XXX  F9   F10  F11  F12  PRN  SCL  PAU  P1   P2   P3   P4	*/
+	{11,  22,  30,  25,  27, -1,  7,   51,  57,  62, -1,  86,  87,  83,  85,  79,  72,  0,   101, 109, 117, 119},
 
-	K_COMMA = 52,
-	K_PERIOD = 60,
-	K_HASH = 68,
+	/*
+	 ^    1    2    3    4    5    6    7    8    9    0    ß    ´   XXX  BCK  INS HOM PUP #LCK #/   #*   #- */
+	{14,  15,  23,  31,  39,  38,  46,  47,  55,  63,  70,  54,  54, -1,  81,  3,  1,  2,  100, 108, 116, 118},
 
-	K_ANGLE_BRACKET = 19,
+	/*
+	 TAB  Q   W   E   R   T   Z/Y  U   I   O   P   Ü/[ +/]  XXX  ENT  DEL  END  PDN  #7  #8   #9   #+ */
+	{9,   8,  16, 24, 32, 33, 41,  40, 48, 56, 64, 65, 49, -1,   84,  94,  92,  88,  96, 104, 112, 110},
 
-	// modifiers
-	K_LALT = 75,
-	K_LCTRL = 6,
-	K_RCTRL = 4,
-	K_LSHIFT = 73,
-	K_RSHIFT = 74,
-	K_LWIN = 90,
-	K_RWIN = 78,
+	/*
+	 CAP  A   S   D   F   G   H   J   K   L   Ö/;  Ä/'  #/C42  XXX XXX XXX XXX XXX #4  #5   #6   XXX */
+	{17,  10, 18, 26, 34, 35, 43, 42, 50, 58, 66,  67,  68,    -1, -1, -1, -1, -1, 97, 105, 113, -1},
 
-	K_ALTGR = 77,
+	/*
+	LSHFT </C45 Y/Z  X   C   V   B   N   M   ,   .   -// XXX XXX RSHFT XXX UP  XXX #1 #2    #3   #ENTER */
+ {73,   19,   12,  20, 28, 36, 37, 45, 44, 52, 60, 69, -1, -1, 74,   -1, 80, -1, 98, 106, 114, 111},
 
-	// various control keys
-	K_BACKSPACE = 81,
-	K_INS = 3,
-	K_DEL = 94,
-	K_HOME = 1,
-	K_END = 92,
-	K_PGDWN = 88,
-	K_PGUP = 2,
-
-	K_ESC = 11,
-	K_ENTER = 84,
-
-	K_CAPSLCK = 17,
-
-	K_ARROW_DOWN = 93,
-	K_ARROW_LEFT = 95,
-	K_ARROW_RIGHT = 5,
-	K_ARROW_UP = 80,
-
-	// numpad
-	K_NUMLCK = 100,
-
-	K_NUM0 = 107,
-	K_NUM1 = 98,
-	K_NUM2 = 106,
-	K_NUM3 = 114,
-	K_NUM4 = 97,
-	K_NUM5 = 105,
-	K_NUM6 = 113,
-	K_NUM7 = 96,
-	K_NUM8 = 104,
-	K_NUM9 = 112,
-
-	K_NUMDEL = 115,
-	K_NUMDIV = 108,
-	K_NUMENTER = 111,
-	K_NUMMINUS = 118,
-	K_NUMMULT = 116,
-	K_NUMPLUS = 110,
-
-	// profile keys
-	K_P1 = 101,
-	K_P2 = 109,
-	K_P3 = 117,
-	K_P4 = 119,
-
-	// letters
-	K_A = 10,
-	K_AE = 67,
-	K_B = 37,
-	K_C = 28,
-	K_D = 26,
-	K_E = 24,
-	K_F = 34,
-	K_G = 35,
-	K_H = 43,
-	K_I = 48,
-	K_J = 42,
-	K_K = 50,
-	K_L = 58,
-	K_M = 44,
-	K_N = 45,
-	K_O = 56,
-	K_OE = 66,
-	K_P = 64,
-	K_Q = 8,
-	K_R = 32,
-	K_S = 18,
-	K_T = 33,
-	K_U = 40,
-	K_UE = 65,
-	K_V = 36,
-	K_W = 16,
-	K_X = 20,
-	K_Y = 12,
-	K_Z = 41,
-
-	K_SPACE = 91,
-	K_TAB = 9,
-
-	// function keys
-	K_F1 = 22,
-	K_F2 = 30,
-	K_F3 = 25,
-	K_F4 = 27,
-	K_F5 = 7,
-	K_F6 = 51,
-	K_F7 = 57,
-	K_F8 = 62,
-	K_F9 = 86,
-	K_F10 = 87,
-	K_F11 = 83,
-	K_F12 = 85,
-	K_FN = 61,
-
-	// etc
-	K_PRTSCR = 79,
-	K_SCRLCK = 72,
-	K_PAUSE = 0,
-
+	/*
+	LCTRL LWIN LALT XXX XXX XXX SPACE XXX XXX XXX RALT RWIN FN XXX  RCTRL LEFT DOWN RIGHT #0   XXX #,   XXX */
+ {6,    90,  75,  -1, -1, -1, 91,   -1, -1, -1, 77,  78,  61, -1, 4,    95,  93,  5,    107, -1, 115, -1 }
 };
