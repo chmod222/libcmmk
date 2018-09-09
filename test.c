@@ -1,6 +1,6 @@
 #include "libcmmk.h"
 
-#include <unistd.h> /* sleep() */
+#include <unistd.h> /* usleep() */
 
 #include <signal.h>
 #include <stdio.h>

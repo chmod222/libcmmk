@@ -37,12 +37,14 @@ enum cmmk_layout {
 	CMMK_LAYOUT_INVAL /* end marker */
 };
 
+/* Apparently can be anything in range [0x00, 0x50].
+ *  Over 0x50 it just stops animating */
 enum cmmk_effect_speed {
 	CMMK_SPEED0 = 0x46,
 	CMMK_SPEED1 = 0x41,
 	CMMK_SPEED2 = 0x38,
 	CMMK_SPEED3 = 0x3D,
-	CMMK_SPEED4 = 0x27
+	CMMK_SPEED4 = 0x31
 };
 
 enum cmmk_wave_direction {
@@ -66,6 +68,22 @@ enum cmmk_control_mode {
 	CMMK_PROFILE_CUSTOMIZATION = 0x03
 };
 
+enum cmmk_effect_id {
+	CMMK_EFFECT_FULLY_LIT = 0x00,
+	CMMK_EFFECT_BREATHE = 0x01,
+	CMMK_EFFECT_CYCLE = 0x02,
+	CMMK_EFFECT_SINGLE = 0x03,
+	CMMK_EFFECT_WAVE = 0x04,
+	CMMK_EFFECT_RIPPLE = 0x05,
+	CMMK_EFFECT_CROSS = 0x06,
+	CMMK_EFFECT_RAINDROPS = 0x07,
+	CMMK_EFFECT_STARS = 0x08,
+	CMMK_EFFECT_SNAKE = 0x09,
+	CMMK_EFFECT_CUSTOMIZED = 0x0a,
+	CMMK_EFFECT_OFF = 0xfe
+};
+
+
 /*
  * Attach to and detach from USB device
  */
@@ -75,6 +93,70 @@ struct cmmk {
 
 	int product;
 	int layout;
+};
+
+struct cmmk_effect_fully_lit {
+	struct rgb color;
+};
+
+struct cmmk_effect_breathe {
+	int speed;
+
+	struct rgb color;
+};
+
+struct cmmk_effect_cycle {
+	int speed;
+};
+
+struct cmmk_effect_single {
+	int speed;
+
+	struct rgb active;
+	struct rgb rest;
+};
+
+struct cmmk_effect_wave {
+	int speed;
+	int direction;
+
+	struct rgb start;
+};
+
+struct cmmk_effect_ripple {
+	int speed;
+
+	int random;
+
+	struct rgb active;
+	struct rgb rest;
+};
+
+struct cmmk_effect_cross {
+	int speed;
+
+	struct rgb active;
+	struct rgb rest;
+};
+
+struct cmmk_effect_raindrops {
+	int speed;
+	int interval;
+
+	struct rgb active;
+	struct rgb rest;
+};
+
+struct cmmk_effect_stars {
+	int speed;
+	int interval;
+
+	struct rgb active;
+	struct rgb rest;
+};
+
+struct cmmk_effect_snake {
+	int speed;
 };
 
 int cmmk_attach(struct cmmk *state, int product, int layout);
@@ -92,35 +174,40 @@ int cmmk_set_active_profile(struct cmmk *dev, int prof);
 int cmmk_get_active_profile(struct cmmk *dev);
 
 /* Predefined effects */
-int cmmk_set_effect_fully_lit(struct cmmk *dev, struct rgb const *color);
+int cmmk_activate_effect(struct cmmk *dev, enum cmmk_effect_id eff);
+int cmmk_get_active_effect(struct cmmk *dev, enum cmmk_effect_id *eff);
 
-int cmmk_set_effect_breathe(struct cmmk *dev, int speed, struct rgb const *color);
+/* Get and set effect configurations */
+int cmmk_get_effect_fully_lit(struct cmmk *dev, struct cmmk_effect_fully_lit *eff);
+int cmmk_set_effect_fully_lit(struct cmmk *dev, struct cmmk_effect_fully_lit const *eff);
 
-int cmmk_set_effect_cycle(struct cmmk *dev, int speed);
+int cmmk_set_effect_breathe(struct cmmk *dev, struct cmmk_effect_breathe const *eff);
+int cmmk_get_effect_breathe(struct cmmk *dev, struct cmmk_effect_breathe *eff);
 
-int cmmk_set_effect_single(struct cmmk *dev, int speed,
-		struct rgb const *active,
-		struct rgb const *rest);
+int cmmk_get_effect_cycle(struct cmmk *dev, struct cmmk_effect_cycle *eff);
+int cmmk_set_effect_cycle(struct cmmk *dev, struct cmmk_effect_cycle const *eff);
 
-int cmmk_set_effect_wave(struct cmmk *dev, int speed, int direction, struct rgb const *color);
+int cmmk_get_effect_single(struct cmmk *dev, struct cmmk_effect_single *eff);
+int cmmk_set_effect_single(struct cmmk *dev, struct cmmk_effect_single const *eff);
 
-/* color == NULL => random */
-int cmmk_set_effect_ripple(struct cmmk *dev, int speed, struct rgb const *color);
+int cmmk_get_effect_wave(struct cmmk *dev, struct cmmk_effect_wave *eff);
+int cmmk_set_effect_wave(struct cmmk *dev, struct cmmk_effect_wave const *eff);
 
-int cmmk_set_effect_cross(struct cmmk *dev, int speed,
-		struct rgb const *active,
-		struct rgb const *rest);
+int cmmk_get_effect_ripple(struct cmmk *dev, struct cmmk_effect_ripple *eff);
+int cmmk_set_effect_ripple(struct cmmk *dev, struct cmmk_effect_ripple const *eff);
 
-int cmmk_set_effect_raindrops(struct cmmk *dev, int speed,
-		struct rgb const *drop,
-		struct rgb const *sky);
+int cmmk_get_effect_cross(struct cmmk *dev, struct cmmk_effect_cross *eff);
+int cmmk_set_effect_cross(struct cmmk *dev, struct cmmk_effect_cross const *eff);
 
+int cmmk_get_effect_raindrops(struct cmmk *dev, struct cmmk_effect_raindrops *eff);
+int cmmk_set_effect_raindrops(struct cmmk *dev, struct cmmk_effect_raindrops const *eff);
 
-int cmmk_set_effect_stars(struct cmmk *dev, int speed,
-		struct rgb const *star,
-		struct rgb const *sky);
+int cmmk_get_effect_stars(struct cmmk *dev, struct cmmk_effect_stars *eff);
+int cmmk_set_effect_stars(struct cmmk *dev, struct cmmk_effect_stars const *eff);
 
-int cmmk_set_effect_snake(struct cmmk *dev, int speed);
+int cmmk_get_effect_snake(struct cmmk *dev, struct cmmk_effect_snake *eff);
+int cmmk_set_effect_snake(struct cmmk *dev, struct cmmk_effect_snake const *eff);
+
 int cmmk_set_effect_customized(struct cmmk *dev);
 int cmmk_set_effect_off(struct cmmk *dev);
 
@@ -150,5 +237,7 @@ int cmmk_set_all_single(struct cmmk *dev, struct rgb const *col);
  * set_single_key(..., K_ESC, ...) will.
  */
 int cmmk_set_leds(struct cmmk *dev, struct rgb *colmap);
+
+int debug(struct cmmk *dev);
 
 #endif /* !defined(LIBCMMK_H) */

@@ -64,7 +64,7 @@ Packet format (apparently):
  				<args>: <n> (profile_id?)
  				<response_args>: <n> 0x00 [0xff]x32
 
- 			N: 0x28: Get current effect (? - unverified)
+ 			I: 0x28: Get current effect
  				<args>: none
  				<response_args>: 0x00 0x00 <current_effect>
 
@@ -72,12 +72,9 @@ Packet format (apparently):
  				<args>: none
  				<response_args>: 0x00 0x00 0x00 0x04 ...[bunch of stuff]
 
- 			N: 0x2c: Get effect parameters (?)
- 				<args>: 0x00 0x00 0x00 0xff...
- 				<response_args>: 0x00 0x00 0x04 0x3c ...[bunch of stuff]
-
- 				Send off request with effect ID, padding up with zero, get effect params in
- 				response?
+ 			I: 0x2c: Get effect parameters
+ 				<args>: 0x00 0x00 <effect_id> 0xff ...
+ 				<response_args>: 0x00 0x00 <effect_id> <p1> <p2> <p3> 0xff 0xff <r1> <g1> <b1> <r2> <g2> <b2>
 
  			N: 0xa8: Get customized profile colors (? - unverified, strong idea)
  				<args>: <offset> 0x00
