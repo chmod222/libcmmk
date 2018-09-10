@@ -27,9 +27,9 @@ Packet format (apparently):
  			I: 0x02: Application entirely in charge, FW disabled
  			I: 0x03: Profile customization (?)
 
- 	0x50: Profile management (? - unverified, sent right before switching to next profile on save-all)
+ 	0x50: Profile management
  		<subcommand>-types:
- 			N: 0x55: Save active profile (? - unverified)
+ 			I: 0x55: Save active profile
  				<args>: none
 
  	0x51: Generic control command (?)
@@ -37,7 +37,7 @@ Packet format (apparently):
  			I: 0x00: Set active profile
  				<args>: 0x00 0x00 <profile_id>
 
- 			N: 0x01: (?) Maybe: set profile parameters
+ 			N: 0x01: (?) Maybe: set profile parameters. Parameter is constrained between 0 and 4 inclusive.
  				<args>: 0x01 [profile_id]
 
  			I: 0x28: Set active effect
@@ -50,7 +50,7 @@ Packet format (apparently):
 
  			N: 0xa0: (?)
 
- 			N: 0xa8: Set customized profile colors (? - unverified, strong hint)
+ 			I: 0xa8: Set customized profile colors
  				<args>: <offset> 0x00 [<r> <g> <b>]x16
  				<offset>: Packet offset times two (0x00, 0x02, 0x04, 0x06, ... 0x0e/0x0d)
 
@@ -60,7 +60,7 @@ Packet format (apparently):
  				<args>: none
  				<response_args>: 0x00 0x00 <active_profile> (?)
 
- 			N: 0x01: (?)
+ 			N: 0x01: (?) - No apparent effect. Parameter n is constrained between 0 and 4 inclusive.
  				<args>: <n> (profile_id?)
  				<response_args>: <n> 0x00 [0xff]x32
 
@@ -76,7 +76,7 @@ Packet format (apparently):
  				<args>: 0x00 0x00 <effect_id> 0xff ...
  				<response_args>: 0x00 0x00 <effect_id> <p1> <p2> <p3> 0xff 0xff <r1> <g1> <b1> <r2> <g2> <b2>
 
- 			N: 0xa8: Get customized profile colors (? - unverified, strong idea)
+ 			I: 0xa8: Get customized profile colors
  				<args>: <offset> 0x00
  				<response_args>: <offset> 0x00 [<r> <g> <b>]x16
 

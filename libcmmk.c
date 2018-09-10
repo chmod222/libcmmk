@@ -28,6 +28,47 @@ enum {
 	CMMK_USB_EP_OUT = 0x83
 };
 
+static void hexdump(void const *ptr, size_t buflen);
+
+/* linear -> matrix */
+static int transpose(struct cmmk *dev, struct rgb const *linear, struct cmmk_color_matrix *matrix)
+{
+	int i;
+
+	for (i = 0; i < CMMK_KEYLIST_SIZE; ++i) {
+		if (dev->rowmap[i] < 0 || dev->colmap[i] < 0) {
+			continue;
+		}
+
+		matrix->data[dev->rowmap[i]][dev->colmap[i]] = linear[i];
+	}
+
+	return 0;
+}
+
+/* matrix -> linear */
+int transpose_reverse(struct cmmk *dev, struct cmmk_color_matrix const *matrix, struct rgb *linear)
+{
+	keyboard_layout const *layout = keyboard_layouts[dev->layout];
+
+	int i;
+	int j;
+
+	for (i = 0; i < 6; ++i) {
+		for (j = 0; j < 22; ++j) {
+			int pos = 0;
+
+			if ((pos = (*layout)[i][j]) < 0 || pos > CMMK_KEYLIST_SIZE) {
+				continue;
+			}
+
+			linear[pos] = matrix->data[i][j];
+		}
+	}
+
+	return 0;
+}
+
 static int send_command(libusb_device_handle *dev, unsigned char *data, size_t datasiz)
 {
 	int tx;
@@ -46,6 +87,11 @@ static int send_command(libusb_device_handle *dev, unsigned char *data, size_t d
  */
 int cmmk_attach(struct cmmk *state, int product, int layout)
 {
+	int i;
+	int j;
+
+	keyboard_layout const *keyboard_layout = keyboard_layouts[layout];
+
 	if (getuid() != 0)
 		return 1;
 
@@ -69,6 +115,25 @@ int cmmk_attach(struct cmmk *state, int product, int layout)
 
 	if (libusb_claim_interface(state->dev, CMMK_USB_INTERFACE) != 0)
 		goto out_step2;
+
+	/*
+	 * Generate lookup map
+	 */
+	memset(state->rowmap, -1, sizeof(state->rowmap));
+	memset(state->colmap, -1, sizeof(state->colmap));
+
+	for (i = 0; i < 6; ++i) {
+		for (j = 0; j < 22; ++j) {
+			int p = (*keyboard_layout)[i][j];
+
+			if (p < 0) {
+				continue;
+			}
+
+			state->rowmap[p] = i;
+			state->colmap[p] = j;
+		}
+	}
 
 	return 0;
 
@@ -116,6 +181,14 @@ int cmmk_get_active_profile(struct cmmk *dev)
 
 	return getprof[4];
 }
+
+int cmmk_save_active_profile(struct cmmk *dev)
+{
+	unsigned char saveprof[64] = {0x50, 0x55};
+
+	return send_command(dev->dev, saveprof, sizeof(saveprof));
+}
+
 
 static int set_effect1(struct cmmk *dev, int eff)
 {
@@ -205,13 +278,13 @@ static int get_effect(
 	return 0;
 }
 
-int cmmk_activate_effect(struct cmmk *dev, enum cmmk_effect_id eff)
+int cmmk_set_active_effect(struct cmmk *dev, enum cmmk_effect_id eff)
 {
 	if (eff < 0 || (eff > CMMK_EFFECT_CUSTOMIZED && eff != CMMK_EFFECT_OFF)) {
 		return 1;
 	}
 
-	set_effect1(dev, eff);
+	return set_effect1(dev, eff);
 }
 
 int cmmk_get_active_effect(struct cmmk *dev, enum cmmk_effect_id *eff)
@@ -354,6 +427,69 @@ int cmmk_set_effect_customized(struct cmmk *dev)
 	return set_effect1(dev, CMMK_EFFECT_CUSTOMIZED);
 }
 
+int cmmk_set_customized_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap)
+{
+	unsigned char data[64] = {0x51, 0xa8};
+
+	int i;
+	int j;
+
+	struct rgb linear[CMMK_KEYLIST_SIZE] = {};
+	struct rgb *nextcol = linear;
+
+	transpose_reverse(dev, colmap, linear);
+
+	for (i = 0; i < 8; ++i) {
+		data[2] = i*2;
+
+		for (j = 0; j < 16; ++j) {
+			int const offset = 4 + (j * 3);
+
+			data[offset] = nextcol->R;
+			data[offset + 1] = nextcol->G;
+			data[offset + 2] = nextcol->B;
+
+			++nextcol;
+		}
+
+		send_command(dev->dev, data, sizeof(data));
+	}
+
+	return 0;
+}
+
+int cmmk_get_customized_leds(struct cmmk *dev, struct cmmk_color_matrix *colmap)
+{
+	struct rgb linear[CMMK_KEYLIST_SIZE] = {};
+
+	unsigned char data[64] = {0x52, 0xa8};
+
+	int i;
+	int j;
+
+	struct rgb *ptr = linear;
+
+	for (i = 0; i < 8; ++i) {
+		data[2] = i * 2;
+
+		send_command(dev->dev, data, sizeof(data));
+
+		for (j = 0; j < 16; ++j) {
+			int const offset = 4 + (j * 3);
+
+			ptr->R = data[offset];
+			ptr->G = data[offset + 1];
+			ptr->B = data[offset + 2];
+
+			++ptr;
+		}
+	}
+
+	transpose(dev, linear, colmap);
+
+	return 0;
+}
+
 int cmmk_set_effect_off(struct cmmk *dev)
 {
 	return set_effect1(dev, CMMK_EFFECT_OFF);
@@ -397,14 +533,17 @@ int cmmk_set_all_single(struct cmmk *dev, struct rgb const *col)
  * colmap[K_ESC] will address the ESC key, much like
  * set_single_key(..., K_ESC, ...) will.
  */
-int cmmk_set_leds(struct cmmk *dev, struct rgb *colmap)
+int cmmk_set_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap)
 {
 	unsigned char data[64];
 
 	int i;
 	int j;
 
-	struct rgb *nextcol = colmap;
+	struct rgb linear[CMMK_KEYLIST_SIZE] = {};
+	struct rgb *nextcol = linear;
+
+	transpose_reverse(dev, colmap, linear);
 
 	for (i = 0; i < 8; ++i) {
 		data[0] = 0xc0;

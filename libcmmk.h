@@ -93,6 +93,17 @@ struct cmmk {
 
 	int product;
 	int layout;
+
+	/*
+	 * Lookup map to get matrix positions for keys in constant time.
+	 */
+	int8_t rowmap[CMMK_KEYLIST_SIZE];
+	int8_t colmap[CMMK_KEYLIST_SIZE];
+};
+
+/* Helper type because passing multi dim arrays as parameter is yucky */
+struct cmmk_color_matrix {
+	struct rgb data[6][22];
 };
 
 struct cmmk_effect_fully_lit {
@@ -169,15 +180,21 @@ int cmmk_detach(struct cmmk *state);
  */
 int cmmk_set_control_mode(struct cmmk *dev, int mode);
 
-/* Only possible in profile mode */
+/* Only meaningful in profile customization mode */
 int cmmk_set_active_profile(struct cmmk *dev, int prof);
 int cmmk_get_active_profile(struct cmmk *dev);
+int cmmk_save_active_profile(struct cmmk *dev);
 
 /* Predefined effects */
-int cmmk_activate_effect(struct cmmk *dev, enum cmmk_effect_id eff);
+int cmmk_set_active_effect(struct cmmk *dev, enum cmmk_effect_id eff);
 int cmmk_get_active_effect(struct cmmk *dev, enum cmmk_effect_id *eff);
 
-/* Get and set effect configurations */
+/*
+ * Get and set effect configurations.
+ *
+ * Caveeat: In customization mode, you can only change the configuration of an effect when it is
+ * currently active. This does not seem to be the case in effects mode.
+ */
 int cmmk_get_effect_fully_lit(struct cmmk *dev, struct cmmk_effect_fully_lit *eff);
 int cmmk_set_effect_fully_lit(struct cmmk *dev, struct cmmk_effect_fully_lit const *eff);
 
@@ -209,6 +226,16 @@ int cmmk_get_effect_snake(struct cmmk *dev, struct cmmk_effect_snake *eff);
 int cmmk_set_effect_snake(struct cmmk *dev, struct cmmk_effect_snake const *eff);
 
 int cmmk_set_effect_customized(struct cmmk *dev);
+
+/*
+ * colmap *must* be at least 6x22. Otherwise, segmentation faults ensue.
+ *
+ * CAVEAT: The result will be wrong immediately after switching profiles. A few milliseconds
+ * of delay need to be inserted after the switch and before the query.
+ */
+int cmmk_set_customized_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap);
+int cmmk_get_customized_leds(struct cmmk *dev, struct cmmk_color_matrix *colmap);
+
 int cmmk_set_effect_off(struct cmmk *dev);
 
 /*
@@ -229,15 +256,10 @@ int cmmk_set_all_single(struct cmmk *dev, struct rgb const *col);
 /*
  * Set the entire keyboard in one step from the given map.
  *
- * colmap *must* be at least CMMK_KEYLIST_SIZE entries long.
- * Otherwise, segmentation faults ensue.
- *
  * Keys in the map are indized by their individual mappings, so
  * colmap[K_ESC] will address the ESC key, much like
  * set_single_key(..., K_ESC, ...) will.
  */
-int cmmk_set_leds(struct cmmk *dev, struct rgb *colmap);
-
-int debug(struct cmmk *dev);
+int cmmk_set_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap);
 
 #endif /* !defined(LIBCMMK_H) */
