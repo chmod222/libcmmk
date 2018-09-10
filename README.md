@@ -5,10 +5,24 @@ Based entirely on captured USB data without any reverse engineering performed
 on official binaries.
 
 Due to a lack of hardware available for testing, the only currently supported
-model is the EU / German version of the Masterkeys L edition.
+models are:
 
+ * MasterKeys Pro L, EU / German
+ * MasterKeys Pro S, US
 
-Requirements:
+Implemented features:
+  - Profile customization
+    * Switching between P1 - P4
+    * Configuring effects
+    * Configuring custom background lighting
+    * Saving profile customizations to the firmware
+
+  - Manual control
+    * Set the entire keyboard to a single color or a color map
+    * Set individual keys
+    * Activate and configure effects active during manual control
+
+Build requirements:
   - A C compiler from at least the current century (C99)
   - libusb-1.0
 
