@@ -146,9 +146,6 @@ int cmmk_attach(struct cmmk *state, int product, int layout)
 
 	keyboard_layout const *keyboard_layout = keyboard_layouts[layout];
 
-	if (getuid() != 0)
-		return 1;
-
 	if (libusb_init(&state->cxt) != 0)
 		goto out_step0;
 
