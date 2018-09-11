@@ -225,14 +225,18 @@ int cmmk_set_active_profile(struct cmmk *dev, int prof)
 	return send_command(dev->dev, setprof, sizeof(setprof));
 }
 
-int cmmk_get_active_profile(struct cmmk *dev)
+int cmmk_get_active_profile(struct cmmk *dev, int *prof)
 {
+	int r;
+
 	unsigned char getprof[64] = {0x52, 0x00};
 
-	if (send_command(dev->dev, getprof, sizeof(getprof)) != 0)
-		return -1;
+	if ((r = send_command(dev->dev, getprof, sizeof(getprof))) != 0)
+		return r;
 
-	return getprof[4];
+	*prof = getprof[4];
+
+	return 0;
 }
 
 int cmmk_save_active_profile(struct cmmk *dev)

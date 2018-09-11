@@ -206,7 +206,7 @@ int cmmk_detach(struct cmmk *state);
 int cmmk_set_control_mode(struct cmmk *dev, int mode);
 
 /* Only meaningful in profile customization mode */
-int cmmk_get_active_profile(struct cmmk *dev);
+int cmmk_get_active_profile(struct cmmk *dev, int *prof);
 int cmmk_set_active_profile(struct cmmk *dev, int prof);
 
 int cmmk_save_active_profile(struct cmmk *dev);
