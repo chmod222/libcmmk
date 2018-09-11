@@ -45,7 +45,10 @@ Packet format (apparently):
 			I: 0x28: Set active effect
 				<args>: 0x00 0x00 <effect_id>
 
-			N: 0x29: (?)
+			N: 0x29: Set active/configured? effects (checkboxes left to the effect name in MK software)
+				<args>: none
+				<response:
+					0x52 0x29 0x00 0x00 <eff_id>x18, padded with 0xff
 
 			I: 0x2c: Set effect parameters
 				<args>: <x> 0x00 <effect_id> <p1> <p2> <p3> 0xff 0xff <r1> <g1> <b1> <r2> <g2> <b2>
@@ -75,11 +78,10 @@ Packet format (apparently):
 				<args>: none
 				<response_args>: 0x00 0x00 <current_effect>
 
-			N: 0x29: (?) - Called on control software exit and connect
+			N: 0x29: Get active/configured? effects (checkboxes left to the effect name in MK software)
 				<args>: none
 				<response:
-					0x52 0x29 0x00 0x00 0x00 0x04 0x06 0x03   0x0a 0x08 0x07 0x02 0x01 0x05 0x09 0xfe
-					0xff 0xff 0xff 0xff 0xff 0xff 0x00 0x00   0x00 ...
+					0x52 0x29 0x00 0x00 <eff_id>x18, padded with 0xff
 
 			I: 0x2c: Get effect parameters
 				<args>: <x> 0x00 <effect_id> 0xff ... (x = 1 when called right before multilayer)
