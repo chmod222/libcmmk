@@ -3,6 +3,7 @@
 #include <unistd.h> /* usleep() */
 
 #include <signal.h>
+#include <string.h> /* memset() */
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -16,7 +17,53 @@ static void interrupted(int sig)
 	g_stop = 1;
 }
 
-int cmmk_set_profile(struct cmmk *dev, int prof);
+int test_multilayer(struct cmmk *dev)
+{
+	/* Simple multilayer demo.
+	 *
+	 * This will set the ESC and arrow keys to a rainbow pattern, the main block to raindrop and
+	 * everything else to a set color (#404040, greyish).
+	 */
+	struct cmmk_effect_matrix map = {0};
+
+	struct cmmk_effect_fully_lit f = {
+		.color = MKRGB(0x404040)
+	};
+
+	struct cmmk_effect_wave w = {
+		.speed = 0x20,
+		.direction = CMMK_LEFT_TO_RIGHT,
+		.start = MKRGB(0xffffff)
+	};
+
+	struct cmmk_effect_raindrops r = {
+		.speed = 0x20,
+		.interval = 0x30,
+		.active = MKRGB(0xffffff),
+		.rest = MKRGB(0x000000)
+	};
+
+	map.data[0][0] = CMMK_EFFECT_WAVE;
+
+	memset(&map.data[1], CMMK_EFFECT_RAINDROPS, 15);
+	memset(&map.data[2], CMMK_EFFECT_RAINDROPS, 15);
+	memset(&map.data[3], CMMK_EFFECT_RAINDROPS, 15);
+	memset(&map.data[4], CMMK_EFFECT_RAINDROPS, 15);
+	memset(&map.data[5], CMMK_EFFECT_RAINDROPS, 15);
+
+	cmmk_set_control_mode(dev, CMMK_EFFECT);
+
+	cmmk_switch_multilayer(dev, 1);
+		cmmk_set_effect_fully_lit(dev, &f);
+		cmmk_set_effect_wave(dev, &w);
+		cmmk_set_effect_raindrops(dev, &r);
+	cmmk_switch_multilayer(dev, 0);
+
+	cmmk_set_multilayer_map(dev, &map);
+	cmmk_set_active_effect(dev, CMMK_EFFECT_MULTILAYER);
+
+	return 0;
+}
 
 int main(int argc, char** argv)
 {
@@ -28,28 +75,14 @@ int main(int argc, char** argv)
 	if (cmmk_attach(&state, 0x003b, CMMK_LAYOUT_EU_L) != 0)
 		return 1;
 
-	cmmk_set_control_mode(&state, CMMK_MANUAL);
-
 	signal(SIGINT, interrupted);
 
-	static struct rgb col = MKRGB(0xFF00FF);
+	test_multilayer(&state);
 
-	for (int i = 0; i < 6; ++i) {
-		for (int j = 0; j < 22; ++j) {
-			int8_t k = cmmk_from_row_col(&state, i, j);
-
-			if (g_stop) {
-				goto rip;
-			} else if (k < 0) {
-				continue;
-			}
-
-			cmmk_set_single_key(&state, k, &col);
-			usleep(25000);
-		}
+	while (!g_stop) {
+		sleep(1);
 	}
 
-rip:
 	cmmk_set_control_mode(&state, CMMK_FIRMWARE);
 	cmmk_detach(&state);
 

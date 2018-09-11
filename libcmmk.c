@@ -46,8 +46,46 @@ static int transpose(struct cmmk *dev, struct rgb const *linear, struct cmmk_col
 	return 0;
 }
 
+/* Too bad C doesn't have templates */
+static int transpose_effects(struct cmmk *dev, uint8_t const *linear, struct cmmk_effect_matrix *matrix)
+{
+	int i;
+
+	for (i = 0; i < CMMK_KEYLIST_SIZE; ++i) {
+		if (dev->rowmap[i] < 0 || dev->colmap[i] < 0) {
+			continue;
+		}
+
+		matrix->data[dev->rowmap[i]][dev->colmap[i]] = linear[i];
+	}
+
+	return 0;
+}
+
 /* matrix -> linear */
 int transpose_reverse(struct cmmk *dev, struct cmmk_color_matrix const *matrix, struct rgb *linear)
+{
+	keyboard_layout const *layout = keyboard_layouts[dev->layout];
+
+	int i;
+	int j;
+
+	for (i = 0; i < 6; ++i) {
+		for (j = 0; j < 22; ++j) {
+			int pos = 0;
+
+			if ((pos = (*layout)[i][j]) < 0 || pos > CMMK_KEYLIST_SIZE) {
+				continue;
+			}
+
+			linear[pos] = matrix->data[i][j];
+		}
+	}
+
+	return 0;
+}
+
+int transpose_effects_reverse(struct cmmk *dev, struct cmmk_effect_matrix const *matrix, uint8_t *linear)
 {
 	keyboard_layout const *layout = keyboard_layouts[dev->layout];
 
@@ -135,6 +173,8 @@ int cmmk_attach(struct cmmk *state, int product, int layout)
 		}
 	}
 
+	state->multilayer_mode = 0;
+
 	return 0;
 
 out_step2: libusb_close(state->dev);
@@ -212,7 +252,7 @@ static int set_effect(
 	struct rgb const *col2)
 {
 	unsigned char data[64] = {
-		0x51, 0x2c, 0x00, 0x00, eff,  p1,   p2,   p3,
+		0x51, 0x2c, dev->multilayer_mode, 0x00, eff,  p1,   p2,   p3,
 		0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 	if (col1 != NULL) {
@@ -242,7 +282,7 @@ static int get_effect(
 	int r;
 
 	unsigned char data[64] = {
-		0x52, 0x2c, 0x00, 0x00, eff
+		0x52, 0x2c, dev->multilayer_mode, 0x00, eff
 	};
 
 	memset(data + 5, 0xff, 59);
@@ -280,7 +320,9 @@ static int get_effect(
 
 int cmmk_set_active_effect(struct cmmk *dev, enum cmmk_effect_id eff)
 {
-	if (eff < 0 || (eff > CMMK_EFFECT_CUSTOMIZED && eff != CMMK_EFFECT_OFF)) {
+	if (eff < 0 || (eff > CMMK_EFFECT_CUSTOMIZED
+			&& eff != CMMK_EFFECT_OFF
+			&& eff != CMMK_EFFECT_MULTILAYER)) {
 		return 1;
 	}
 
@@ -486,6 +528,97 @@ int cmmk_get_customized_leds(struct cmmk *dev, struct cmmk_color_matrix *colmap)
 	}
 
 	transpose(dev, linear, colmap);
+
+	return 0;
+}
+
+int cmmk_switch_multilayer(struct cmmk *dev, int active)
+{
+	dev->multilayer_mode = active > 0;
+
+	return 0;
+}
+
+int cmmk_get_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix *effmap)
+{
+	int r;
+
+	unsigned char data[64] = {0x52, 0xa0, 0x01, 0x00};
+	uint8_t linear[CMMK_KEYLIST_SIZE];
+
+	/* Call 1 */
+	data[4] = 0x00;
+	data[5] = 0x07;
+
+	if ((r = send_command(dev->dev, data, sizeof(data))) != 0) {
+		return r;
+	}
+
+	memcpy(linear, data + 8, 56);
+
+	/* Call 2 */
+	data[4] = 0x07;
+	data[5] = 0x07;
+
+	if ((r = send_command(dev->dev, data, sizeof(data))) != 0) {
+		return r;
+	}
+
+	memcpy(linear + 56, data + 8, 56);
+
+	/* Call 3 */
+	data[4] = 0x0e;
+	data[5] = 0x01;
+
+	if ((r = send_command(dev->dev, data, sizeof(data))) != 0) {
+		return r;
+	}
+
+	memcpy(linear + 112, data + 8, 8);
+
+	transpose_effects(dev, linear, effmap);
+
+	return 0;
+}
+
+int cmmk_set_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix const *effmap)
+{
+	int r;
+
+	unsigned char data[64] = {0x51, 0xa0, 0x01, 0x00};
+	uint8_t linear[CMMK_KEYLIST_SIZE] = {0};
+
+	transpose_effects_reverse(dev, effmap, linear);
+
+	/* Call 1 */
+	data[4] = 0x00;
+	data[5] = 0x07;
+
+	memcpy(data + 8, linear, 56);
+
+	if ((r = send_command(dev->dev, data, sizeof(data))) != 0) {
+		return r;
+	}
+
+	/* Call 2 */
+	data[4] = 0x07;
+	data[5] = 0x07;
+
+	memcpy(data + 8, linear + 56, 56);
+
+	if ((r = send_command(dev->dev, data, sizeof(data))) != 0) {
+		return r;
+	}
+
+	/* Call 3 */
+	data[4] = 0x0e;
+	data[5] = 0x01;
+
+	memcpy(data + 8, linear + 112, 8);
+
+	if ((r = send_command(dev->dev, data, sizeof(data))) != 0) {
+		return r;
+	}
 
 	return 0;
 }

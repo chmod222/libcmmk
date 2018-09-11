@@ -13,7 +13,8 @@ Packet format (apparently):
  				<args>: 0xdf 0xfc 0x00 0x30 0x00 0x00  0x3d 0x30 0x00...
  				<response>: 0x05 0x00 0x00 0x00 0x32 0x2e 0x32 0x2e  0x31 0x00 0x00 0x00 0xff...
  					Presumably some device information (Firmware version, etc)
-
+					
+					Starting at offset 4: Firmware version (null terminated?)
  	0x40: (?)
  		<subcommand>-types:
  			N: 0x20: (?)
@@ -36,6 +37,7 @@ Packet format (apparently):
  		<subcommand>-types:
  			I: 0x00: Set active profile
  				<args>: 0x00 0x00 <profile_id>
+				<response>: 0x51 0x00 0x00 0x00 <previous profile>
 
  			N: 0x01: (?) Maybe: set profile parameters. Parameter is constrained between 0 and 4 inclusive.
  				<args>: 0x01 [profile_id]
@@ -46,9 +48,10 @@ Packet format (apparently):
  			N: 0x29: (?)
 
  			I: 0x2c: Set effect parameters
- 				<args>: 0x00 0x00 <effect_id> <p1> <p2> <p3> 0xff 0xff <r1> <g1> <b1> <r2> <g2> <b2>
+ 				<args>: <x> 0x00 <effect_id> <p1> <p2> <p3> 0xff 0xff <r1> <g1> <b1> <r2> <g2> <b2>
+					x = 1 when called for multilayer
 
- 			N: 0xa0: (?)
+ 			N: 0xa0: Multilayer mapping
 
  			I: 0xa8: Set customized profile colors
  				<args>: <offset> 0x00 [<r> <g> <b>]x16
@@ -62,18 +65,24 @@ Packet format (apparently):
 
  			N: 0x01: (?) - No apparent effect. Parameter n is constrained between 0 and 4 inclusive.
  				<args>: <n> (profile_id?)
- 				<response_args>: <n> 0x00 [0xff]x32
+ 				<response>: 0x52 0x01 <n> 0x00 [0xff]x32
+
+			N: 0x10: (?)
+				<args> 0x00 ...
+				<response> 0x00 ...
 
  			I: 0x28: Get current effect
  				<args>: none
  				<response_args>: 0x00 0x00 <current_effect>
 
- 			N: 0x29: (?)
+ 			N: 0x29: (?) - Called on control software exit and connect
  				<args>: none
- 				<response_args>: 0x00 0x00 0x00 0x04 ...[bunch of stuff]
+ 				<response:
+					0x52 0x29 0x00 0x00 0x00 0x04 0x06 0x03   0x0a 0x08 0x07 0x02 0x01 0x05 0x09 0xfe
+					0xff 0xff 0xff 0xff 0xff 0xff 0x00 0x00   0x00 ...
 
  			I: 0x2c: Get effect parameters
- 				<args>: 0x00 0x00 <effect_id> 0xff ...
+ 				<args>: <x> 0x00 <effect_id> 0xff ... (x = 1 when called right before multilayer)
  				<response_args>: 0x00 0x00 <effect_id> <p1> <p2> <p3> 0xff 0xff <r1> <g1> <b1> <r2> <g2> <b2>
 
  			I: 0xa8: Get customized profile colors
@@ -121,3 +130,37 @@ CM Software initialization process:
  	>> 0x51 0x00 ... (set effect)
  	<< 0x52 0x00 ... (query parameters)
 
+
+Multilayer: (static #6a3939 background (=eff 0), color wave on ESC and arrow keys (=eff 4))
+  >> 51 2c 01 00 00 ff 00 ff   ff ff 6a 39 39 00 00 00 (#6a3939 = static color)
+	<< ACK
+	>> 51 2c 01 00 04 3c 00 ff   ff ff ff ff ff 00 00 00 (Wave effect)
+	<< ACK
+	>> 51 a0 01 00 00 07 00 00 [data ...] (8 byte numerics describing effect active for key at that position)
+	<< ACK
+	>> 51 a0 01 00 07 07 00 00 [data ...]
+	<< ACK
+	>> 51 a0 01 00 0e 01 00 00 [data ...]
+	<< ACK
+	>> 51 28 00 00 e0
+	<< ACK
+
+
+Multilayer 2:
+	Effect 0: Breathe (1), base
+	Effect 1: Wave (4), ins hom pup pdwn end del
+	Effect 2: Raindrop (7), numpad and profile switches
+	Effect 3: Cross (6), arrow keys, prntscrn, scrolllock, pause
+
+	For X in [1, 4, 7, 6]:
+		>> 51 2c 01 00 X  [effect args]
+		<< ACK
+
+	>> 51 a0 01 00 00 07 00 00 [data ...] (8 byte numerics describing effect active for key at that position)
+	<< ACK
+	>> 51 a0 01 00 07 07 00 00 [data ...]
+	<< ACK
+	>> 51 a0 01 00 0e 01 00 00 [data ...]
+	<< ACK
+	>> 51 28 00 00 e0
+	<< ACK

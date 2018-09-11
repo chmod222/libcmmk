@@ -64,7 +64,8 @@ enum cmmk_control_mode {
 	/* Manual control of everything */
 	CMMK_MANUAL = 0x02,
 
-	/* Profile setup */
+	/* Profile setup (may actually be a misnomer, as saving the profile works
+	 * in effect mode as well */
 	CMMK_PROFILE_CUSTOMIZATION = 0x03
 };
 
@@ -80,6 +81,7 @@ enum cmmk_effect_id {
 	CMMK_EFFECT_STARS = 0x08,
 	CMMK_EFFECT_SNAKE = 0x09,
 	CMMK_EFFECT_CUSTOMIZED = 0x0a,
+	CMMK_EFFECT_MULTILAYER = 0xe0,
 	CMMK_EFFECT_OFF = 0xfe
 };
 
@@ -99,12 +101,19 @@ struct cmmk {
 	 */
 	int8_t rowmap[CMMK_KEYLIST_SIZE];
 	int8_t colmap[CMMK_KEYLIST_SIZE];
+
+	int multilayer_mode;
 };
 
-/* Helper type because passing multi dim arrays as parameter is yucky */
+/* Helper types because passing multi dim arrays as parameter is yucky */
 struct cmmk_color_matrix {
 	struct rgb data[6][22];
 };
+
+struct cmmk_effect_matrix {
+	uint8_t data[6][22]; /* values as type of enum cmmk_effect_id */
+};
+
 
 struct cmmk_effect_fully_lit {
 	struct rgb color;
@@ -237,6 +246,16 @@ int cmmk_set_customized_leds(struct cmmk *dev, struct cmmk_color_matrix const *c
 int cmmk_get_customized_leds(struct cmmk *dev, struct cmmk_color_matrix *colmap);
 
 int cmmk_set_effect_off(struct cmmk *dev);
+
+/*
+ * Switch multilayer mode on (active > 0) or off (active == 0).
+ *
+ * Affects effect configuration getters and setters.
+ */
+int cmmk_switch_multilayer(struct cmmk *dev, int active);
+
+int cmmk_get_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix *effmap);
+int cmmk_set_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix const *effmap);
 
 /*
  * Translate row/col notation from the official SDK into a key code

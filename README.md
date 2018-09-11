@@ -21,6 +21,7 @@ Implemented features:
     * Set the entire keyboard to a single color or a color map
     * Set individual keys
     * Activate and configure effects active during manual control
+    * Multilayer/mosaic mode support
 
 Build requirements:
   - A C compiler from at least the current century (C99)
