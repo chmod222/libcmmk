@@ -206,13 +206,14 @@ int cmmk_detach(struct cmmk *state);
 int cmmk_set_control_mode(struct cmmk *dev, int mode);
 
 /* Only meaningful in profile customization mode */
-int cmmk_set_active_profile(struct cmmk *dev, int prof);
 int cmmk_get_active_profile(struct cmmk *dev);
+int cmmk_set_active_profile(struct cmmk *dev, int prof);
+
 int cmmk_save_active_profile(struct cmmk *dev);
 
 /* Predefined effects */
-int cmmk_set_active_effect(struct cmmk *dev, enum cmmk_effect_id eff);
 int cmmk_get_active_effect(struct cmmk *dev, enum cmmk_effect_id *eff);
+int cmmk_set_active_effect(struct cmmk *dev, enum cmmk_effect_id eff);
 
 /*
  * Get and set effect configurations.
@@ -223,8 +224,8 @@ int cmmk_get_active_effect(struct cmmk *dev, enum cmmk_effect_id *eff);
 int cmmk_get_effect_fully_lit(struct cmmk *dev, struct cmmk_effect_fully_lit *eff);
 int cmmk_set_effect_fully_lit(struct cmmk *dev, struct cmmk_effect_fully_lit const *eff);
 
-int cmmk_set_effect_breathe(struct cmmk *dev, struct cmmk_effect_breathe const *eff);
 int cmmk_get_effect_breathe(struct cmmk *dev, struct cmmk_effect_breathe *eff);
+int cmmk_set_effect_breathe(struct cmmk *dev, struct cmmk_effect_breathe const *eff);
 
 int cmmk_get_effect_cycle(struct cmmk *dev, struct cmmk_effect_cycle *eff);
 int cmmk_set_effect_cycle(struct cmmk *dev, struct cmmk_effect_cycle const *eff);
@@ -256,10 +257,8 @@ int cmmk_set_effect_snake(struct cmmk *dev, struct cmmk_effect_snake const *eff)
  * CAVEAT: The result will be wrong immediately after switching profiles. A few milliseconds
  * of delay need to be inserted after the switch and before the query.
  */
-int cmmk_set_customized_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap);
 int cmmk_get_customized_leds(struct cmmk *dev, struct cmmk_color_matrix *colmap);
-
-int cmmk_set_effect_off(struct cmmk *dev);
+int cmmk_set_customized_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap);
 
 /*
  * Switch multilayer mode on (active > 0) or off (active == 0).

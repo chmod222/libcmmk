@@ -625,11 +625,6 @@ int cmmk_set_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix const *e
 	return 0;
 }
 
-int cmmk_set_effect_off(struct cmmk *dev)
-{
-	return set_effect1(dev, CMMK_EFFECT_OFF);
-}
-
 int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col)
 {
 	keyboard_layout const *layout = keyboard_layouts[dev->layout];
