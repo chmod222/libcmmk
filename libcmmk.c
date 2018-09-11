@@ -248,7 +248,7 @@ int cmmk_save_active_profile(struct cmmk *dev)
 
 static int set_effect1(struct cmmk *dev, int eff)
 {
-	unsigned char data[64] = {0x51, 0x28, 0x00, eff};
+	unsigned char data[64] = {0x51, 0x28, 0x00, 0x00, eff};
 
 	return send_command(dev->dev, data, sizeof(data));
 }
