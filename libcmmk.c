@@ -1,3 +1,19 @@
+/*
+ * This file is part of libcmmk.
+ *
+ * libcmmk is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * libcmmk is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with libcmmk.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "libcmmk.h"
 
 #include <unistd.h> /* getuid() */
@@ -687,39 +703,4 @@ int cmmk_set_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap)
 	}
 
 	return 0;
-}
-
-static void hexdump(void const *ptr, size_t buflen)
-{
-	unsigned char *buf = (unsigned char*)ptr;
-	size_t i;
-	size_t j;
-
-	printf("        0  1  2  3  4  5  6  7    8  9  A  B  C  D  E  F   01234567 89ABCDEF\n");
-
-	for (i = 0; i < buflen; i += 16) {
-		printf("%06lx: ", i);
-
-		for (j = 0; j < 16; j++) {
-			if (j == 8)
-				printf("  ");
-
-			if ((i + j) < buflen)
-				printf("%02x ", buf[i + j]);
-			else
-				printf("   ");
-		}
-
-		printf(" ");
-
-		for (j = 0; j < 16; j++) {
-			if (j == 8)
-				printf(" ");
-
-			if ((i + j) < buflen)
-				printf("%c", isprint(buf[i + j]) ? buf[i + j] : '.');
-		}
-
-		printf("\n");
-	}
 }
