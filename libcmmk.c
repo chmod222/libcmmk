@@ -643,7 +643,7 @@ int cmmk_set_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix const *e
 	return 0;
 }
 
-int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col)
+static int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col)
 {
 	keyboard_layout const *layout = keyboard_layouts[dev->layout];
 
@@ -653,9 +653,11 @@ int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col)
 /*
  * Set the single key `key' (indized via enum cmmk_keycode) to the given color.
  */
-int cmmk_set_single_key(struct cmmk *dev, int key, struct rgb const *col)
+int cmmk_set_single_key(struct cmmk *dev, int row, int col, struct rgb const *color)
 {
-	unsigned char data[64] = {0xc0, 0x01, 0x01, 0x00, key, col->R, col->G, col->B};
+	int key = cmmk_from_row_col(dev, row, col);
+
+	unsigned char data[64] = {0xc0, 0x01, 0x01, 0x00, key, color->R, color->G, color->B};
 
 	return send_command(dev->dev, data, sizeof(data));
 }

@@ -292,14 +292,9 @@ int cmmk_get_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix *effmap)
 int cmmk_set_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix const *effmap);
 
 /*
- * Translate row/col notation from the official SDK into a key code
- */
-int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col);
-
-/*
  * Set the single key `key' (indized via enum cmmk_keycode) to the given color.
  */
-int cmmk_set_single_key(struct cmmk *dev, int key, struct rgb const *col);
+int cmmk_set_single_key(struct cmmk *dev, int row, int col, struct rgb const *color);
 
 /*
  * Set the entire keyboard to the given color.
