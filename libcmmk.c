@@ -354,6 +354,15 @@ int cmmk_get_active_effect(struct cmmk *dev, enum cmmk_effect_id *eff)
 	return 0;
 }
 
+int cmmk_get_effect(struct cmmk *dev, enum cmmk_effect_id id, struct cmmk_generic_effect *eff)
+{
+	return get_effect(dev, id, &eff->p1, &eff->p2, &eff->p3, &eff->color1, &eff->color2);
+}
+int cmmk_set_effect(struct cmmk *dev, enum cmmk_effect_id id, struct cmmk_generic_effect const *eff)
+{
+	return set_effect(dev, id, eff->p1, eff->p2, eff->p3, &eff->color1, &eff->color2);
+}
+
 
 int cmmk_get_effect_fully_lit(struct cmmk *dev, struct cmmk_effect_fully_lit *eff)
 {
@@ -401,7 +410,15 @@ int cmmk_set_effect_single(struct cmmk *dev, struct cmmk_effect_single const *ef
 
 int cmmk_get_effect_wave(struct cmmk *dev, struct cmmk_effect_wave *eff)
 {
-	return get_effect(dev, CMMK_EFFECT_WAVE, &eff->speed, &eff->direction, NULL, &eff->start, NULL);
+	int r;
+	int p2;
+
+	if ((r = get_effect(dev, CMMK_EFFECT_WAVE, &eff->speed, &p2, NULL, &eff->start, NULL)) != 0) {
+		return r;
+	}
+
+	eff->direction = p2;
+	return 0;
 }
 
 int cmmk_set_effect_wave(struct cmmk *dev, struct cmmk_effect_wave const *eff)
@@ -413,23 +430,20 @@ int cmmk_set_effect_wave(struct cmmk *dev, struct cmmk_effect_wave const *eff)
 int cmmk_get_effect_ripple(struct cmmk *dev, struct cmmk_effect_ripple *eff)
 {
 	int r;
+	int p2;
 
-	int random;
-
-	r = get_effect(dev, CMMK_EFFECT_RIPPLE, &eff->speed, &random, NULL, &eff->active, &eff->rest);
-
-	if (r != 0) {
+	if ((r = get_effect(dev, CMMK_EFFECT_RIPPLE, &eff->speed, &p2, NULL, &eff->active, &eff->rest)) != 0) {
 		return r;
 	}
 
-	eff->random = random == 0x80;
+	eff->ripple_type = (p2 == 0x80) ? CMMK_RIPPLE_RANDOM_COLOR : CMMK_RIPPLE_GIVEN_COLOR;
 
 	return 0;
 }
 
 int cmmk_set_effect_ripple(struct cmmk *dev, struct cmmk_effect_ripple const *eff)
 {
-	return set_effect(dev, CMMK_EFFECT_RIPPLE, eff->speed, eff->random ? 0x80 : 0x00, 0xff, &eff->active, &eff->rest);
+	return set_effect(dev, CMMK_EFFECT_RIPPLE, eff->speed, eff->ripple_type ? 0x80 : 0x00, 0xff, &eff->active, &eff->rest);
 }
 
 

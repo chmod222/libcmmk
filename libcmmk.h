@@ -70,6 +70,11 @@ enum cmmk_wave_direction {
 	CMMK_FRONT_TO_BACK = 0x06
 };
 
+enum cmmk_ripple_type {
+	CMMK_RIPPLE_GIVEN_COLOR, /* use the given color */
+	CMMK_RIPPLE_RANDOM_COLOR = 0x80 /* use a random color */
+};
+
 enum cmmk_control_mode {
 	/* Firmware controls everything */
 	CMMK_FIRMWARE = 0x00,
@@ -130,6 +135,18 @@ struct cmmk_effect_matrix {
 	uint8_t data[6][22]; /* values as type of enum cmmk_effect_id */
 };
 
+/* Generic effect type for when type safety becomes too verbose.
+ *
+ * No sanity checking is done before sending this off to the firmware, so try to stay within
+ * normal parameters. */
+struct cmmk_generic_effect {
+	int p1;
+	int p2;
+	int p3;
+
+	struct rgb color1;
+	struct rgb color2;
+};
 
 struct cmmk_effect_fully_lit {
 	struct rgb color;
@@ -154,7 +171,8 @@ struct cmmk_effect_single {
 
 struct cmmk_effect_wave {
 	int speed;
-	int direction;
+
+	enum cmmk_wave_direction direction;
 
 	struct rgb start;
 };
@@ -162,7 +180,7 @@ struct cmmk_effect_wave {
 struct cmmk_effect_ripple {
 	int speed;
 
-	int random;
+	enum cmmk_ripple_type ripple_type;
 
 	struct rgb active;
 	struct rgb rest;
@@ -221,6 +239,9 @@ int cmmk_set_active_effect(struct cmmk *dev, enum cmmk_effect_id eff);
  * Caveeat: In customization mode, you can only change the configuration of an effect when it is
  * currently active. This does not seem to be the case in effects mode.
  */
+int cmmk_get_effect(struct cmmk *dev, enum cmmk_effect_id id, struct cmmk_generic_effect *eff);
+int cmmk_set_effect(struct cmmk *dev, enum cmmk_effect_id id, struct cmmk_generic_effect const *eff);
+
 int cmmk_get_effect_fully_lit(struct cmmk *dev, struct cmmk_effect_fully_lit *eff);
 int cmmk_set_effect_fully_lit(struct cmmk *dev, struct cmmk_effect_fully_lit const *eff);
 
