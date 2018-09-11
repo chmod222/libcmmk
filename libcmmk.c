@@ -232,13 +232,7 @@ int cmmk_save_active_profile(struct cmmk *dev)
 
 static int set_effect1(struct cmmk *dev, int eff)
 {
-	unsigned char data[64] = {0x41, 0x01};
-
-	send_command(dev->dev, data, sizeof(data));
-
-	data[0] = 0x51;
-	data[1] = 0x28;
-	data[4] = eff;
+	unsigned char data[64] = {0x51, 0x28, 0x00, eff};
 
 	return send_command(dev->dev, data, sizeof(data));
 }
@@ -462,11 +456,6 @@ int cmmk_get_effect_snake(struct cmmk *dev, struct cmmk_effect_snake *eff)
 int cmmk_set_effect_snake(struct cmmk *dev, struct cmmk_effect_snake const *eff)
 {
 	return set_effect(dev, CMMK_EFFECT_SNAKE, eff->speed, 0x00, 0xff, NULL, NULL);
-}
-
-int cmmk_set_effect_customized(struct cmmk *dev)
-{
-	return set_effect1(dev, CMMK_EFFECT_CUSTOMIZED);
 }
 
 int cmmk_set_customized_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap)

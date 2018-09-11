@@ -234,8 +234,6 @@ int cmmk_set_effect_stars(struct cmmk *dev, struct cmmk_effect_stars const *eff)
 int cmmk_get_effect_snake(struct cmmk *dev, struct cmmk_effect_snake *eff);
 int cmmk_set_effect_snake(struct cmmk *dev, struct cmmk_effect_snake const *eff);
 
-int cmmk_set_effect_customized(struct cmmk *dev);
-
 /*
  * colmap *must* be at least 6x22. Otherwise, segmentation faults ensue.
  *
