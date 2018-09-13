@@ -651,15 +651,23 @@ static int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col)
 }
 
 /*
- * Set the single key `key' (indized via enum cmmk_keycode) to the given color.
+ * Set the single key `key' to the given color.
+ */
+int cmmk_set_single_key_by_id(struct cmmk *dev, int key, struct rgb const *color)
+{
+	unsigned char data[64] = {0xc0, 0x01, 0x01, 0x00, key, color->R, color->G, color->B};
+
+	return send_command(dev->dev, data, sizeof(data));
+}
+
+/*
+ * Set the single key in row `row` and column `col` to the given color.
  */
 int cmmk_set_single_key(struct cmmk *dev, int row, int col, struct rgb const *color)
 {
 	int key = cmmk_from_row_col(dev, row, col);
 
-	unsigned char data[64] = {0xc0, 0x01, 0x01, 0x00, key, color->R, color->G, color->B};
-
-	return send_command(dev->dev, data, sizeof(data));
+	return cmmk_set_single_key_by_id(dev, key, color);
 }
 
 /*
