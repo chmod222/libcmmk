@@ -42,9 +42,11 @@ struct rgb {
 	unsigned char B;
 };
 
+
 enum cmmk_product {
 	CMMK_USB_MASTERKEYS_PRO_L = 0x003b,
-	CMMK_USB_MASTERKEYS_PRO_S = 0x003c
+	CMMK_USB_MASTERKEYS_PRO_S = 0x003c,
+	CMMK_USB_MASTERKEYS_MK750 = 0x0067,
 };
 
 enum cmmk_layout {
