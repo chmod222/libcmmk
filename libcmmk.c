@@ -22,7 +22,7 @@
 #include <libusb-1.0/libusb.h>
 
 /* Initialize keyboard layouts */
-typedef int8_t keyboard_layout[CMMK_ROWS_MAX][CMMK_COLS_MAX];
+typedef int16_t keyboard_layout[CMMK_ROWS_MAX][CMMK_COLS_MAX];
 
 #include "keymap_eu.h"
 #include "keymap_us.h"
