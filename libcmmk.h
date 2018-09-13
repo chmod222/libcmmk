@@ -19,6 +19,9 @@
 
 #include <libusb-1.0/libusb.h>
 
+#define CMMK_ROWS_MAX 6
+#define CMMK_COLS_MAX 22
+
 #define CMMK_KEYLIST_SIZE 128 /* 8x16 RGB values => 128 distinct */
 
 /*
@@ -128,11 +131,11 @@ struct cmmk {
 
 /* Helper types because passing multi dim arrays as parameter is yucky */
 struct cmmk_color_matrix {
-	struct rgb data[6][22];
+	struct rgb data[CMMK_ROWS_MAX][CMMK_COLS_MAX];
 };
 
 struct cmmk_effect_matrix {
-	uint8_t data[6][22]; /* values as type of enum cmmk_effect_id */
+	uint8_t data[CMMK_ROWS_MAX][CMMK_COLS_MAX]; /* values as type of enum cmmk_effect_id */
 };
 
 /* Generic effect type for when type safety becomes too verbose.

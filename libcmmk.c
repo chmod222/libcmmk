@@ -22,7 +22,7 @@
 #include <libusb-1.0/libusb.h>
 
 /* Initialize keyboard layouts */
-typedef int8_t keyboard_layout[6][22];
+typedef int8_t keyboard_layout[CMMK_ROWS_MAX][CMMK_COLS_MAX];
 
 #include "keymap_eu.h"
 #include "keymap_us.h"
@@ -86,8 +86,8 @@ int transpose_reverse(struct cmmk *dev, struct cmmk_color_matrix const *matrix, 
 	int i;
 	int j;
 
-	for (i = 0; i < 6; ++i) {
-		for (j = 0; j < 22; ++j) {
+	for (i = 0; i < CMMK_ROWS_MAX; ++i) {
+		for (j = 0; j < CMMK_COLS_MAX; ++j) {
 			int pos = 0;
 
 			if ((pos = (*layout)[i][j]) < 0 || pos > CMMK_KEYLIST_SIZE) {
@@ -108,8 +108,8 @@ int transpose_effects_reverse(struct cmmk *dev, struct cmmk_effect_matrix const 
 	int i;
 	int j;
 
-	for (i = 0; i < 6; ++i) {
-		for (j = 0; j < 22; ++j) {
+	for (i = 0; i < CMMK_ROWS_MAX; ++i) {
+		for (j = 0; j < CMMK_COLS_MAX; ++j) {
 			int pos = 0;
 
 			if ((pos = (*layout)[i][j]) < 0 || pos > CMMK_KEYLIST_SIZE) {
@@ -173,8 +173,8 @@ int cmmk_attach(struct cmmk *state, int product, int layout)
 	memset(state->rowmap, -1, sizeof(state->rowmap));
 	memset(state->colmap, -1, sizeof(state->colmap));
 
-	for (i = 0; i < 6; ++i) {
-		for (j = 0; j < 22; ++j) {
+	for (i = 0; i < CMMK_ROWS_MAX; ++i) {
+		for (j = 0; j < CMMK_COLS_MAX; ++j) {
 			int p = (*keyboard_layout)[i][j];
 
 			if (p < 0) {
