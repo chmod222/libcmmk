@@ -19,7 +19,7 @@
 
 #include <libusb-1.0/libusb.h>
 
-#define CMMK_ROWS_MAX 6
+#define CMMK_ROWS_MAX 7
 #define CMMK_COLS_MAX 22
 
 #define CMMK_KEYLIST_SIZE 128 /* 8x16 RGB values => 128 distinct */
