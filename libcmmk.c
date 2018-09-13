@@ -44,8 +44,6 @@ enum {
 	CMMK_USB_EP_OUT = 0x83
 };
 
-static void hexdump(void const *ptr, size_t buflen);
-
 /* linear -> matrix */
 static int transpose(struct cmmk *dev, struct rgb const *linear, struct cmmk_color_matrix *matrix)
 {
