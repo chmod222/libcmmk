@@ -43,7 +43,9 @@ static keyboard_layout layout_eu_l = {
 
 	/*
 	LCTRL LWIN LALT XXX XXX XXX SPACE XXX XXX XXX RALT RWIN FN XXX  RCTRL LEFT DOWN RIGHT #0   XXX #,   XXX */
-	{6,   90,  75,  -1, -1, -1, 91,   -1, -1, -1, 77,  78,  61, -1, 4,    95,  93,  5,    107, -1, 115, -1 }
+	{6,   90,  75,  -1, -1, -1, 91,   -1, -1, -1, 77,  78,  61, -1, 4,    95,  93,  5,    107, -1, 115, -1 },
+
+	{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}
 };
 
 static keyboard_layout layout_eu_mk750 = {
