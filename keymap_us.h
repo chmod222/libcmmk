@@ -44,3 +44,5 @@ static keyboard_layout layout_us_s = {
 
 /* TODO */
 static keyboard_layout layout_us_l = { {-1}, {-1}, {-1}, {-1}, {-1}, {-1} };
+
+static keyboard_layout layout_us_mk750 = { {-1}, {-1}, {-1}, {-1}, {-1}, {-1} };

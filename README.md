@@ -9,6 +9,7 @@ models are:
 
  * MasterKeys Pro L, EU / German
  * MasterKeys Pro S, US
+ * MasterKeys MK750, EU / German
 
 Implemented features:
   - Profile customization
