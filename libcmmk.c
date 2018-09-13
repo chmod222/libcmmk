@@ -30,8 +30,10 @@ typedef int16_t keyboard_layout[CMMK_ROWS_MAX][CMMK_COLS_MAX];
 static keyboard_layout const *keyboard_layouts[] = {
 	[CMMK_LAYOUT_US_S] = &layout_us_s,
 	[CMMK_LAYOUT_US_L] = &layout_us_l,
+	[CMMK_LAYOUT_US_MK750] = &layout_us_mk750,
 	[CMMK_LAYOUT_EU_S] = &layout_eu_s,
-	[CMMK_LAYOUT_EU_L] = &layout_eu_l
+	[CMMK_LAYOUT_EU_L] = &layout_eu_l,
+	[CMMK_LAYOUT_EU_MK750] = &layout_eu_mk750,
 };
 
 /* Some global definitions */

@@ -52,8 +52,10 @@ enum cmmk_product {
 enum cmmk_layout {
 	CMMK_LAYOUT_US_S,
 	CMMK_LAYOUT_US_L, /* TODO */
+	CMMK_LAYOUT_US_MK750, /* TODO */
 	CMMK_LAYOUT_EU_S, /* TODO */
 	CMMK_LAYOUT_EU_L,
+	CMMK_LAYOUT_EU_MK750,
 
 	CMMK_LAYOUT_INVAL /* end marker */
 };
