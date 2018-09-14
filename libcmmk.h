@@ -227,6 +227,9 @@ int cmmk_find_device(int *product);
 int cmmk_attach(struct cmmk *state, int product, int layout);
 int cmmk_detach(struct cmmk *state);
 
+/* fw must be up to 8 bytes to read the entire version string */
+int cmmk_get_firmware_version(struct cmmk *state, char *fw, size_t fwsiz);
+
 /*
  * Enter and leave direct control mode. Any control commands outside of control
  * mode are ignored. Enabling control mode while inside control mode will reset

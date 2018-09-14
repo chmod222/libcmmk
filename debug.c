@@ -74,6 +74,8 @@ int main(int argc, char **argv)
 
 	int product;
 
+	char fw[32] = {0};
+
 	struct cmmk state;
 
 	if (cmmk_find_device(&product) != 0) {
@@ -89,6 +91,10 @@ int main(int argc, char **argv)
 
 		return 1;
 	}
+
+	cmmk_get_firmware_version(&state, fw, sizeof(fw));
+
+	printf("Firmware version: %s\n", fw);
 
 	test_handshake1(&state);
 

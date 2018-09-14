@@ -264,6 +264,24 @@ int cmmk_detach(struct cmmk *state)
 	return 0;
 }
 
+int cmmk_get_firmware_version(struct cmmk *state, char *fw, size_t fwsiz)
+{
+	unsigned char data[64] = {0x01, 0x02};
+	int r;
+
+	if ((r = send_command(state->dev, data, sizeof(data))) != 0) {
+		return r;
+	}
+
+	/* Don't want to read past the response buffer */
+	if (fwsiz > 60) {
+		fwsiz = 60;
+	}
+
+	strncpy(fw, (char *)data + 4, fwsiz);
+	return 0;
+}
+
 /*
  * Enter and leave direct control mode. Any control commands outside of control
  * mode are ignored.
