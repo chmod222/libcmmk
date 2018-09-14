@@ -136,6 +136,63 @@ static int send_command(libusb_device_handle *dev, unsigned char *data, size_t d
 	return 0;
 }
 
+int cmmk_find_device(int *product)
+{
+	static int supported_devices[] = {
+		CMMK_USB_MASTERKEYS_PRO_L,
+		CMMK_USB_MASTERKEYS_PRO_S,
+		CMMK_USB_MASTERKEYS_MK750
+	};
+
+	libusb_context *context = NULL;
+	libusb_device **list = NULL;
+
+	int r;
+	int res = 1;
+	ssize_t n;
+
+	if ((r = libusb_init(&context)) != 0) {
+		return 1;
+	}
+
+	n = libusb_get_device_list(context, &list);
+
+	if (n <= 0) {
+		goto out;
+	}
+
+	for (size_t i = 0; i < (size_t)n; ++i) {
+		libusb_device *device = list[i];
+		struct libusb_device_descriptor desc = {0};
+
+		r = libusb_get_device_descriptor(device, &desc);
+
+		if (r != 0) {
+			goto out;
+		}
+
+		if (desc.idVendor != CMMK_USB_VENDOR) {
+			continue;
+		}
+
+		for (size_t j = 0; j < (sizeof(supported_devices) / sizeof(supported_devices[0])); ++j) {
+			if (desc.idProduct == supported_devices[j]) {
+				*product = desc.idProduct;
+
+				res = 0;
+
+				goto out;
+			}
+		}
+	}
+
+out:
+	libusb_free_device_list(list, n);
+	libusb_exit(context);
+
+	return res;
+}
+
 /*
  * Attach to and detach from USB device
  */
@@ -723,4 +780,13 @@ int cmmk_set_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap)
 	}
 
 	return 0;
+}
+
+
+/*
+ * Unpublished functions (debug, survey, ...)
+ */
+int cmmk_send_anything(struct cmmk *dev, unsigned char *data, size_t data_siz)
+{
+	return send_command(dev->dev, data, data_siz);
 }

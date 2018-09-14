@@ -220,6 +220,10 @@ struct cmmk_effect_snake {
 	int speed;
 };
 
+/* Tries to find a connected, compatible device. Returns 0 and sets *product to the
+ * first device it finds */
+int cmmk_find_device(int *product);
+
 int cmmk_attach(struct cmmk *state, int product, int layout);
 int cmmk_detach(struct cmmk *state);
 
@@ -321,5 +325,9 @@ int cmmk_set_all_single(struct cmmk *dev, struct rgb const *col);
  * set_single_key(..., K_ESC, ...) will.
  */
 int cmmk_set_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap);
+
+#ifdef CMMK_DECLARE_DEBUG_FUNCTIONS
+	int cmmk_send_anything(struct cmmk *dev, unsigned char *data, size_t data_siz);
+#endif
 
 #endif /* !defined(LIBCMMK_H) */

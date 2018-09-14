@@ -88,8 +88,15 @@ int main(int argc, char** argv)
 
 	struct cmmk state;
 
-	if (cmmk_attach(&state, 0x003b, CMMK_LAYOUT_EU_L) != 0)
+	int product;
+
+	if (cmmk_find_device(&product) != 0) {
 		return 1;
+	}
+
+	if (cmmk_attach(&state, product, CMMK_LAYOUT_EU_L) != 0) {
+		return 1;
+	}
 
 	signal(SIGINT, interrupted);
 
