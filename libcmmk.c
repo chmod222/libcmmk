@@ -477,6 +477,12 @@ int cmmk_set_enabled_effects(
 		data[4 + i] = effs[i];
 	}
 
+	while (i < 18) {
+		data[4 + i] = 0xff;
+
+		++i;
+	}
+
 	return send_command(dev->dev, data, sizeof(data));;
 }
 
