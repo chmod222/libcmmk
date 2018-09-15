@@ -243,15 +243,63 @@ out:
 }
 
 /*
+ * Abstract these some more as multiple USB PIDs can theoretically identify the same logical device
+ */
+enum cmmk_int_layout {
+	CMMK_INTL_ANSI,
+	CMMK_INTL_ISO
+};
+
+enum cmmk_int_product {
+	CMMK_INTP_PRO_L,
+	CMMK_INTP_PRO_S,
+	CMMK_INTP_MK750
+};
+
+static int cmmk_try_determine_layout(struct cmmk *state, int product)
+{
+	char fw[16];
+
+	enum cmmk_int_layout general_layout = CMMK_INTL_ANSI;
+	enum cmmk_int_product device_model;
+
+	if (cmmk_get_firmware_version(state, fw, sizeof(fw)) == 0) {
+		if (fw[0] == '1') {
+			/* ANSI firmware */
+			general_layout = CMMK_INTL_ANSI;
+		} else {
+			general_layout = CMMK_INTL_ISO;
+		}
+	}
+
+	switch (product) {
+		case CMMK_USB_MASTERKEYS_PRO_L: device_model = CMMK_INTP_PRO_L; break;
+		case CMMK_USB_MASTERKEYS_PRO_S: device_model = CMMK_INTP_PRO_S; break;
+		case CMMK_USB_MASTERKEYS_MK750: device_model = CMMK_INTP_MK750; break;
+	}
+
+	if (general_layout == CMMK_INTL_ANSI) {
+		switch (device_model) {
+			case CMMK_INTP_PRO_L: return CMMK_LAYOUT_US_L;
+			case CMMK_INTP_PRO_S: return CMMK_LAYOUT_US_S;
+			case CMMK_INTP_MK750: return CMMK_LAYOUT_US_MK750;
+		}
+	} else {
+		switch (device_model) {
+			case CMMK_INTP_PRO_L: return CMMK_LAYOUT_EU_L;
+			case CMMK_INTP_PRO_S: return CMMK_LAYOUT_EU_S;
+			case CMMK_INTP_MK750: return CMMK_LAYOUT_EU_MK750;
+		}
+	}
+
+	return -1;
+}
+
+/*
  * Attach to and detach from USB device
  */
 int cmmk_attach(struct cmmk *state, int product, int layout)
 {
-	int i;
-	int j;
-
-	keyboard_layout const *keyboard_layout = keyboard_layouts[layout];
-
 	if (libusb_init(&state->cxt) != 0)
 		goto out_step0;
 
@@ -261,7 +309,6 @@ int cmmk_attach(struct cmmk *state, int product, int layout)
 			product);
 
 	state->product = product;
-	state->layout = layout;
 
 	if (state->dev == NULL)
 		goto out_step1;
@@ -273,11 +320,52 @@ int cmmk_attach(struct cmmk *state, int product, int layout)
 	if (libusb_claim_interface(state->dev, CMMK_USB_INTERFACE) != 0)
 		goto out_step2;
 
+	if (layout < 0) {
+		if ((layout = cmmk_try_determine_layout(state, product)) < 0) {
+			cmmk_detach(state);
+
+			return 1;
+		}
+	}
+
 	/*
 	 * Generate lookup map
 	 */
+	cmmk_force_layout(state, layout);
+
+	state->multilayer_mode = 0;
+
+	return 0;
+
+out_step2: libusb_close(state->dev);
+out_step1: libusb_exit(state->cxt);
+out_step0: return 1;
+}
+
+int cmmk_detach(struct cmmk *state)
+{
+	libusb_release_interface(state->dev, CMMK_USB_INTERFACE);
+	libusb_attach_kernel_driver(state->dev, CMMK_USB_INTERFACE);
+
+	libusb_close(state->dev);
+	libusb_exit(state->cxt);
+
+	return 0;
+}
+
+int cmmk_force_layout(struct cmmk *state, int layout)
+{
+	int i;
+	int j;
+
+	keyboard_layout const *keyboard_layout;
+
+	state->layout = layout;
+
 	memset(state->rowmap, -1, sizeof(state->rowmap));
 	memset(state->colmap, -1, sizeof(state->colmap));
+
+	keyboard_layout = keyboard_layouts[state->layout];
 
 	for (i = 0; i < CMMK_ROWS_MAX; ++i) {
 		for (j = 0; j < CMMK_COLS_MAX; ++j) {
@@ -291,24 +379,6 @@ int cmmk_attach(struct cmmk *state, int product, int layout)
 			state->colmap[p] = j;
 		}
 	}
-
-	state->multilayer_mode = 0;
-
-	return 0;
-
-out_step2: libusb_close(state->dev);
-out_step1: libusb_exit(state->cxt);
-out_step0: return 1;
-}
-
-
-int cmmk_detach(struct cmmk *state)
-{
-	libusb_release_interface(state->dev, CMMK_USB_INTERFACE);
-	libusb_attach_kernel_driver(state->dev, CMMK_USB_INTERFACE);
-
-	libusb_close(state->dev);
-	libusb_exit(state->cxt);
 
 	return 0;
 }

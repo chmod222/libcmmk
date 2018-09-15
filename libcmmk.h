@@ -43,12 +43,18 @@ struct rgb {
 };
 
 
+/*
+ * Physical USB product IDs for general device type detection only.
+ */
 enum cmmk_product {
 	CMMK_USB_MASTERKEYS_PRO_L = 0x003b,
 	CMMK_USB_MASTERKEYS_PRO_S = 0x003c,
 	CMMK_USB_MASTERKEYS_MK750 = 0x0067,
 };
 
+/*
+ * The specific layout of a given device.
+ */
 enum cmmk_layout {
 	CMMK_LAYOUT_US_S,
 	CMMK_LAYOUT_US_L, /* TODO */
@@ -224,8 +230,19 @@ struct cmmk_effect_snake {
  * first device it finds */
 int cmmk_find_device(int *product);
 
+/*
+ * If layout = -1, try to automatically determine the layout.
+ *
+ * Note that autodetection is based on unproven theories right now (see issue #10).
+ * Your mileage may vary.
+ *
+ * If layout autodetection fails, 1 is returned and cmmk_detach is called implicitely.
+ */
 int cmmk_attach(struct cmmk *state, int product, int layout);
 int cmmk_detach(struct cmmk *state);
+
+/* Resets the layout to the given ID and regenerates lookup tables */
+int cmmk_force_layout(struct cmmk *state, int layout);
 
 /* fw must be up to 8 bytes to read the entire version string */
 int cmmk_get_firmware_version(struct cmmk *state, char *fw, size_t fwsiz);
