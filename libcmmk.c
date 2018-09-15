@@ -21,6 +21,13 @@
 
 #include <libusb-1.0/libusb.h>
 
+#undef CMMK_TRACE
+
+#ifdef CMMK_TRACE
+#include <stdio.h>
+#include <ctype.h>
+#endif
+
 /* Initialize keyboard layouts */
 typedef int16_t keyboard_layout[CMMK_ROWS_MAX][CMMK_COLS_MAX];
 
@@ -123,15 +130,57 @@ int transpose_effects_reverse(struct cmmk *dev, struct cmmk_effect_matrix const 
 	return 0;
 }
 
+#ifdef CMMK_TRACE
+static void hexdump(void const *ptr, size_t buflen)
+{
+	unsigned char *buf = (unsigned char*)ptr;
+	size_t i;
+	size_t j;
+
+	printf("        0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\n");
+	for (i = 0; i < buflen; i += 16) {
+		printf("%06lx: ", i);
+
+		for (j = 0; j < 16; j++) {
+			if (i+j < buflen) {
+				printf("%02x ", buf[i+j]);
+			} else {
+				printf("   ");
+			}
+		}
+
+		printf(" ");
+
+		for (j = 0; j < 16; j++) {
+			if (i+j < buflen) {
+				printf("%c", isprint(buf[i+j]) ? buf[i+j] : '.');
+			}
+		}
+
+		printf("\n");
+	}
+}
+#endif
+
 static int send_command(libusb_device_handle *dev, unsigned char *data, size_t datasiz)
 {
 	int tx;
+
+#ifdef CMMK_TRACE
+	printf(">>\n");
+	hexdump(data, datasiz);
+#endif
 
 	if (libusb_interrupt_transfer(dev, CMMK_USB_EP_IN, data, datasiz, &tx, 0) != 0)
 		return 1;
 
 	if (libusb_interrupt_transfer(dev, CMMK_USB_EP_OUT, data, datasiz, &tx, 0) != 0)
 		return 1;
+
+#ifdef CMMK_TRACE
+	printf("<<\n");
+	hexdump(data, datasiz);
+#endif
 
 	return 0;
 }
