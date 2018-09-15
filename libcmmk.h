@@ -247,6 +247,22 @@ int cmmk_save_active_profile(struct cmmk *dev);
 int cmmk_get_active_effect(struct cmmk *dev, enum cmmk_effect_id *eff);
 int cmmk_set_active_effect(struct cmmk *dev, enum cmmk_effect_id eff);
 
+/* Fetch the list of enabled effects. Updates "n" with the number of effects actually
+ * read.
+ */
+int cmmk_get_enabled_effects(
+	struct cmmk *dev,
+	enum cmmk_effect_id *effs,
+	size_t siz,
+	size_t *n);
+
+/* Sets the list of enabled effects. Buffer size is implied and should of course be
+ * at least as big as n. */
+int cmmk_set_enabled_effects(
+	struct cmmk *dev,
+	enum cmmk_effect_id const *effs,
+	size_t n);
+
 /*
  * Get and set effect configurations.
  *

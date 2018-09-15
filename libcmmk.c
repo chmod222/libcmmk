@@ -439,6 +439,47 @@ int cmmk_set_effect(struct cmmk *dev, enum cmmk_effect_id id, struct cmmk_generi
 }
 
 
+int cmmk_get_enabled_effects(
+	struct cmmk *dev,
+	enum cmmk_effect_id *effs,
+	size_t siz,
+	size_t *n)
+{
+	unsigned char data[64] = {0x52, 0x29};
+
+	size_t i;
+	size_t j = 0;
+
+	int r;
+
+	if ((r = send_command(dev->dev, data, sizeof(data))) != 0) {
+		return r;
+	}
+
+	for (i = 4; data[i] != 0xff && j < siz; ++i) {
+		effs[j++] = data[i];
+	}
+
+	*n = j;
+	return 0;
+}
+
+int cmmk_set_enabled_effects(
+	struct cmmk *dev,
+	enum cmmk_effect_id const *effs,
+	size_t n)
+{
+	unsigned char data[64] = {0x51, 0x29};
+
+	size_t i;
+
+	for (i = 0; i < n; ++i) {
+		data[4 + i] = effs[i];
+	}
+
+	return send_command(dev->dev, data, sizeof(data));;
+}
+
 int cmmk_get_effect_fully_lit(struct cmmk *dev, struct cmmk_effect_fully_lit *eff)
 {
 	return get_effect(dev, CMMK_EFFECT_FULLY_LIT, NULL, NULL, NULL, &eff->color, NULL);
