@@ -79,7 +79,7 @@ int main(int argc, char **argv)
 	struct cmmk state;
 
 	if (cmmk_find_device(&product) != 0) {
-		fprintf(stderr, "No device coult be found\n");
+		fprintf(stderr, "No device could be found\n");
 
 		return 1;
 	}
