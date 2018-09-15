@@ -66,7 +66,7 @@ static int transpose(struct cmmk *dev, struct rgb const *linear, struct cmmk_col
 		matrix->data[dev->rowmap[i]][dev->colmap[i]] = linear[i];
 	}
 
-	return 0;
+	return CMMK_OK;
 }
 
 /* Too bad C doesn't have templates */
@@ -82,7 +82,7 @@ static int transpose_effects(struct cmmk *dev, uint8_t const *linear, struct cmm
 		matrix->data[dev->rowmap[i]][dev->colmap[i]] = linear[i];
 	}
 
-	return 0;
+	return CMMK_OK;
 }
 
 /* matrix -> linear */
@@ -105,7 +105,7 @@ int transpose_reverse(struct cmmk *dev, struct cmmk_color_matrix const *matrix, 
 		}
 	}
 
-	return 0;
+	return CMMK_OK;
 }
 
 int transpose_effects_reverse(struct cmmk *dev, struct cmmk_effect_matrix const *matrix, uint8_t *linear)
@@ -127,7 +127,7 @@ int transpose_effects_reverse(struct cmmk *dev, struct cmmk_effect_matrix const 
 		}
 	}
 
-	return 0;
+	return CMMK_OK;
 }
 
 #ifdef CMMK_TRACE
@@ -171,18 +171,20 @@ static int send_command(libusb_device_handle *dev, unsigned char *data, size_t d
 	hexdump(data, datasiz);
 #endif
 
-	if (libusb_interrupt_transfer(dev, CMMK_USB_EP_IN, data, datasiz, &tx, 0) != 0)
-		return 1;
+	if (libusb_interrupt_transfer(dev, CMMK_USB_EP_IN, data, datasiz, &tx, 0) != 0) {
+		return CMMK_USB_COMM;
+	}
 
-	if (libusb_interrupt_transfer(dev, CMMK_USB_EP_OUT, data, datasiz, &tx, 0) != 0)
-		return 1;
+	if (libusb_interrupt_transfer(dev, CMMK_USB_EP_OUT, data, datasiz, &tx, 0) != 0) {
+		return CMMK_USB_COMM;
+	}
 
 #ifdef CMMK_TRACE
 	printf("<<\n");
 	hexdump(data, datasiz);
 #endif
 
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_find_device(int *product)
@@ -324,7 +326,7 @@ int cmmk_attach(struct cmmk *state, int product, int layout)
 		if ((layout = cmmk_try_determine_layout(state, product)) < 0) {
 			cmmk_detach(state);
 
-			return 1;
+			return CMMK_LAYOUT_DETECTION_FAILED;
 		}
 	}
 
@@ -335,7 +337,7 @@ int cmmk_attach(struct cmmk *state, int product, int layout)
 
 	state->multilayer_mode = 0;
 
-	return 0;
+	return CMMK_OK;
 
 out_step2: libusb_close(state->dev);
 out_step1: libusb_exit(state->cxt);
@@ -350,7 +352,7 @@ int cmmk_detach(struct cmmk *state)
 	libusb_close(state->dev);
 	libusb_exit(state->cxt);
 
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_force_layout(struct cmmk *state, int layout)
@@ -380,7 +382,7 @@ int cmmk_force_layout(struct cmmk *state, int layout)
 		}
 	}
 
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_get_firmware_version(struct cmmk *state, char *fw, size_t fwsiz)
@@ -398,7 +400,8 @@ int cmmk_get_firmware_version(struct cmmk *state, char *fw, size_t fwsiz)
 	}
 
 	strncpy(fw, (char *)data + 4, fwsiz);
-	return 0;
+
+	return CMMK_OK;
 }
 
 /*
@@ -430,7 +433,7 @@ int cmmk_get_active_profile(struct cmmk *dev, int *prof)
 
 	*prof = getprof[4];
 
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_save_active_profile(struct cmmk *dev)
@@ -520,7 +523,7 @@ static int get_effect(
 		col2->B = data[15];
 	}
 
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_set_active_effect(struct cmmk *dev, enum cmmk_effect_id eff)
@@ -528,7 +531,7 @@ int cmmk_set_active_effect(struct cmmk *dev, enum cmmk_effect_id eff)
 	if (eff < 0 || (eff > CMMK_EFFECT_CUSTOMIZED
 			&& eff != CMMK_EFFECT_OFF
 			&& eff != CMMK_EFFECT_MULTILAYER)) {
-		return 1;
+		return CMMK_INVAL;
 	}
 
 	return set_effect1(dev, eff);
@@ -545,7 +548,7 @@ int cmmk_get_active_effect(struct cmmk *dev, enum cmmk_effect_id *eff)
 
 	*eff = data[4];
 
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_get_effect(struct cmmk *dev, enum cmmk_effect_id id, struct cmmk_generic_effect *eff)
@@ -580,7 +583,7 @@ int cmmk_get_enabled_effects(
 	}
 
 	*n = j;
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_set_enabled_effects(
@@ -659,7 +662,7 @@ int cmmk_get_effect_wave(struct cmmk *dev, struct cmmk_effect_wave *eff)
 	}
 
 	eff->direction = p2;
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_set_effect_wave(struct cmmk *dev, struct cmmk_effect_wave const *eff)
@@ -679,7 +682,7 @@ int cmmk_get_effect_ripple(struct cmmk *dev, struct cmmk_effect_ripple *eff)
 
 	eff->ripple_type = (p2 == 0x80) ? CMMK_RIPPLE_RANDOM_COLOR : CMMK_RIPPLE_GIVEN_COLOR;
 
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_set_effect_ripple(struct cmmk *dev, struct cmmk_effect_ripple const *eff)
@@ -758,7 +761,7 @@ int cmmk_set_customized_leds(struct cmmk *dev, struct cmmk_color_matrix const *c
 		send_command(dev->dev, data, sizeof(data));
 	}
 
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_get_customized_leds(struct cmmk *dev, struct cmmk_color_matrix *colmap)
@@ -790,14 +793,14 @@ int cmmk_get_customized_leds(struct cmmk *dev, struct cmmk_color_matrix *colmap)
 
 	transpose(dev, linear, colmap);
 
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_switch_multilayer(struct cmmk *dev, int active)
 {
 	dev->multilayer_mode = active > 0;
 
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_get_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix *effmap)
@@ -839,7 +842,7 @@ int cmmk_get_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix *effmap)
 
 	transpose_effects(dev, linear, effmap);
 
-	return 0;
+	return CMMK_OK;
 }
 
 int cmmk_set_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix const *effmap)
@@ -881,7 +884,7 @@ int cmmk_set_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix const *e
 		return r;
 	}
 
-	return 0;
+	return CMMK_OK;
 }
 
 static int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col)
@@ -963,7 +966,7 @@ int cmmk_set_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap)
 		send_command(dev->dev, data, sizeof(data));
 	}
 
-	return 0;
+	return CMMK_OK;
 }
 
 

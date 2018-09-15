@@ -43,6 +43,15 @@ struct rgb {
 };
 
 
+/* Result codes */
+enum cmmk_result {
+	CMMK_OK = 0,
+	CMMK_ERR, /* Non-specific error */
+	CMMK_LAYOUT_DETECTION_FAILED,
+	CMMK_USB_COMM, /* An error happened while trying to talk to the device */
+	CMMK_INVAL, /* Invalid parameter given */
+};
+
 /*
  * Physical USB product IDs for general device type detection only.
  */
