@@ -19,6 +19,10 @@
 
 #include <libusb-1.0/libusb.h>
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #define CMMK_ROWS_MAX 7
 #define CMMK_COLS_MAX 22
 
@@ -393,6 +397,10 @@ int cmmk_set_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap);
 
 #ifdef CMMK_DECLARE_DEBUG_FUNCTIONS
 	int cmmk_send_anything(struct cmmk *dev, unsigned char *data, size_t data_siz);
+#endif
+
+#if defined(__cplusplus)
+}
 #endif
 
 #endif /* !defined(LIBCMMK_H) */
