@@ -244,53 +244,39 @@ out:
 	return res;
 }
 
-/*
- * Abstract these some more as multiple USB PIDs can theoretically identify the same logical device
- */
-enum cmmk_int_layout {
-	CMMK_INTL_ANSI,
-	CMMK_INTL_ISO
-};
-
-enum cmmk_int_product {
-	CMMK_INTP_PRO_L,
-	CMMK_INTP_PRO_S,
-	CMMK_INTP_MK750
-};
-
 static int cmmk_try_determine_layout(struct cmmk *state, int product)
 {
 	char fw[16];
 
-	enum cmmk_int_layout general_layout = CMMK_INTL_ANSI;
-	enum cmmk_int_product device_model;
+	enum cmmk_layout_type general_layout = CMMK_LAYOUT_TYPE_ANSI;
+	enum cmmk_product_type device_model;
 
 	if (cmmk_get_firmware_version(state, fw, sizeof(fw)) == 0) {
 		if (fw[0] == '1') {
 			/* ANSI firmware */
-			general_layout = CMMK_INTL_ANSI;
+			general_layout = CMMK_LAYOUT_TYPE_ANSI;
 		} else {
-			general_layout = CMMK_INTL_ISO;
+			general_layout = CMMK_LAYOUT_TYPE_ISO;
 		}
 	}
 
 	switch (product) {
-		case CMMK_USB_MASTERKEYS_PRO_L: device_model = CMMK_INTP_PRO_L; break;
-		case CMMK_USB_MASTERKEYS_PRO_S: device_model = CMMK_INTP_PRO_S; break;
-		case CMMK_USB_MASTERKEYS_MK750: device_model = CMMK_INTP_MK750; break;
+		case CMMK_USB_MASTERKEYS_PRO_L: device_model = CMMK_PRODUCT_MASTERKEYS_PRO_L; break;
+		case CMMK_USB_MASTERKEYS_PRO_S: device_model = CMMK_PRODUCT_MASTERKEYS_PRO_S; break;
+		case CMMK_USB_MASTERKEYS_MK750: device_model = CMMK_PRODUCT_MASTERKEYS_MK750; break;
 	}
 
-	if (general_layout == CMMK_INTL_ANSI) {
+	if (general_layout == CMMK_LAYOUT_TYPE_ANSI) {
 		switch (device_model) {
-			case CMMK_INTP_PRO_L: return CMMK_LAYOUT_US_L;
-			case CMMK_INTP_PRO_S: return CMMK_LAYOUT_US_S;
-			case CMMK_INTP_MK750: return CMMK_LAYOUT_US_MK750;
+			case CMMK_PRODUCT_MASTERKEYS_PRO_L: return CMMK_LAYOUT_US_L;
+			case CMMK_PRODUCT_MASTERKEYS_PRO_S: return CMMK_LAYOUT_US_S;
+			case CMMK_PRODUCT_MASTERKEYS_MK750: return CMMK_LAYOUT_US_MK750;
 		}
 	} else {
 		switch (device_model) {
-			case CMMK_INTP_PRO_L: return CMMK_LAYOUT_EU_L;
-			case CMMK_INTP_PRO_S: return CMMK_LAYOUT_EU_S;
-			case CMMK_INTP_MK750: return CMMK_LAYOUT_EU_MK750;
+			case CMMK_PRODUCT_MASTERKEYS_PRO_L: return CMMK_LAYOUT_EU_L;
+			case CMMK_PRODUCT_MASTERKEYS_PRO_S: return CMMK_LAYOUT_EU_S;
+			case CMMK_PRODUCT_MASTERKEYS_MK750: return CMMK_LAYOUT_EU_MK750;
 		}
 	}
 
@@ -380,6 +366,38 @@ int cmmk_force_layout(struct cmmk *state, int layout)
 			state->rowmap[p] = i;
 			state->colmap[p] = j;
 		}
+	}
+
+	switch (layout) {
+	case CMMK_LAYOUT_US_S:
+		state->product_type = CMMK_PRODUCT_MASTERKEYS_PRO_S;
+		state->layout_type = CMMK_LAYOUT_TYPE_ANSI;
+		break;
+
+	case CMMK_LAYOUT_US_L:
+		state->product_type = CMMK_PRODUCT_MASTERKEYS_PRO_L;
+		state->layout_type = CMMK_LAYOUT_TYPE_ANSI;
+		break;
+
+	case CMMK_LAYOUT_US_MK750:
+		state->product_type = CMMK_PRODUCT_MASTERKEYS_MK750;
+		state->layout_type = CMMK_LAYOUT_TYPE_ANSI;
+		break;
+
+	case CMMK_LAYOUT_EU_S:
+		state->product_type = CMMK_PRODUCT_MASTERKEYS_PRO_S;
+		state->layout_type = CMMK_LAYOUT_TYPE_ISO;
+		break;
+
+	case CMMK_LAYOUT_EU_L:
+		state->product_type = CMMK_PRODUCT_MASTERKEYS_PRO_L;
+		state->layout_type = CMMK_LAYOUT_TYPE_ISO;
+		break;
+
+	case CMMK_LAYOUT_EU_MK750:
+		state->product_type = CMMK_PRODUCT_MASTERKEYS_MK750;
+		state->layout_type = CMMK_LAYOUT_TYPE_ISO;
+		break;
 	}
 
 	return CMMK_OK;

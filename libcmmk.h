@@ -61,6 +61,12 @@ enum cmmk_product {
 	CMMK_USB_MASTERKEYS_MK750 = 0x0067,
 };
 
+enum cmmk_product_type {
+	CMMK_PRODUCT_MASTERKEYS_PRO_L,
+	CMMK_PRODUCT_MASTERKEYS_PRO_S,
+	CMMK_PRODUCT_MASTERKEYS_MK750,
+};
+
 /*
  * The specific layout of a given device.
  */
@@ -73,6 +79,11 @@ enum cmmk_layout {
 	CMMK_LAYOUT_EU_MK750,
 
 	CMMK_LAYOUT_INVAL /* end marker */
+};
+
+enum cmmk_layout_type {
+	CMMK_LAYOUT_TYPE_ANSI,
+	CMMK_LAYOUT_TYPE_ISO
 };
 
 /* Apparently can be anything in range [0x00, 0x50].
@@ -136,8 +147,16 @@ struct cmmk {
 	libusb_context *cxt;
 	libusb_device_handle *dev;
 
+	/*
+	 * Internal product IDs that are not all that useful outside the library.
+	 */
 	int product;
 	int layout;
+
+	/* External product IDs that can be used for displaying or property queries for the
+	 * embedding application, conveniently separate the model from the layout. */
+	enum cmmk_product_type product_type;
+	enum cmmk_layout_type layout_type;
 
 	/*
 	 * Lookup map to get matrix positions for keys in constant time.
@@ -240,7 +259,8 @@ struct cmmk_effect_snake {
 int cmmk_find_device(int *product);
 
 /*
- * If layout = -1, try to automatically determine the layout.
+ * If layout = -1, try to automatically determine the layout. Otherwise, use one of the values
+ * enumerated in `enum cmmk_layout'.
  *
  * Note that autodetection is based on unproven theories right now (see issue #10).
  * Your mileage may vary.
