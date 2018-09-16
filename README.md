@@ -4,6 +4,10 @@ to programmatically control LEDs of Coolermaster Masterkey keyboards.
 Based entirely on captured USB data without any reverse engineering performed
 on official binaries.
 
+For an implementation of this library usable for people who do not want to drop down to C programming
+to configure their devices under Linux, see the separate [cmmk_ctrl](https://github.com/chmod222/cmmk_ctrl)
+project.
+
 # Device Support
 The currently supported and known to work devices include:
 
