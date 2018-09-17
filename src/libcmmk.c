@@ -18,6 +18,7 @@
 
 #include <unistd.h> /* getuid() */
 #include <string.h> /* memset() */
+#include <assert.h>
 
 #include <libusb-1.0/libusb.h>
 
@@ -368,38 +369,6 @@ int cmmk_force_layout(struct cmmk *dev, int layout)
 		}
 	}
 
-	switch (layout) {
-	case CMMK_LAYOUT_US_S:
-		dev->product_type = CMMK_PRODUCT_MASTERKEYS_PRO_S;
-		dev->layout_type = CMMK_LAYOUT_TYPE_ANSI;
-		break;
-
-	case CMMK_LAYOUT_US_L:
-		dev->product_type = CMMK_PRODUCT_MASTERKEYS_PRO_L;
-		dev->layout_type = CMMK_LAYOUT_TYPE_ANSI;
-		break;
-
-	case CMMK_LAYOUT_US_MK750:
-		dev->product_type = CMMK_PRODUCT_MASTERKEYS_MK750;
-		dev->layout_type = CMMK_LAYOUT_TYPE_ANSI;
-		break;
-
-	case CMMK_LAYOUT_EU_S:
-		dev->product_type = CMMK_PRODUCT_MASTERKEYS_PRO_S;
-		dev->layout_type = CMMK_LAYOUT_TYPE_ISO;
-		break;
-
-	case CMMK_LAYOUT_EU_L:
-		dev->product_type = CMMK_PRODUCT_MASTERKEYS_PRO_L;
-		dev->layout_type = CMMK_LAYOUT_TYPE_ISO;
-		break;
-
-	case CMMK_LAYOUT_EU_MK750:
-		dev->product_type = CMMK_PRODUCT_MASTERKEYS_MK750;
-		dev->layout_type = CMMK_LAYOUT_TYPE_ISO;
-		break;
-	}
-
 	return CMMK_OK;
 }
 
@@ -420,6 +389,42 @@ int cmmk_get_firmware_version(struct cmmk *dev, char *fw, size_t fwsiz)
 	strncpy(fw, (char *)data + 4, fwsiz);
 
 	return CMMK_OK;
+}
+
+enum cmmk_product_type cmmk_get_device_model(struct cmmk *dev)
+{
+	switch (dev->layout) {
+	case CMMK_LAYOUT_US_S:
+	case CMMK_LAYOUT_EU_S:
+		return CMMK_PRODUCT_MASTERKEYS_PRO_S;
+
+	case CMMK_LAYOUT_US_L:
+	case CMMK_LAYOUT_EU_L:
+		return CMMK_PRODUCT_MASTERKEYS_PRO_L;
+
+	case CMMK_LAYOUT_US_MK750:
+	case CMMK_LAYOUT_EU_MK750:
+		return CMMK_PRODUCT_MASTERKEYS_MK750;
+	}
+
+	assert(0 && "unreachable");
+}
+
+enum cmmk_layout_type cmmk_get_device_layout(struct cmmk *dev)
+{
+	switch (dev->layout) {
+	case CMMK_LAYOUT_US_S:
+	case CMMK_LAYOUT_US_L:
+	case CMMK_LAYOUT_US_MK750:
+		return CMMK_LAYOUT_TYPE_ANSI;
+
+	case CMMK_LAYOUT_EU_S:
+	case CMMK_LAYOUT_EU_L:
+	case CMMK_LAYOUT_EU_MK750:
+		return CMMK_LAYOUT_TYPE_ISO;
+	}
+
+	assert(0 && "unreachable");
 }
 
 /*

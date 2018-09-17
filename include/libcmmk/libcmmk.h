@@ -65,12 +65,6 @@ enum cmmk_product {
 	CMMK_USB_MASTERKEYS_MK750 = 0x0067,
 };
 
-enum cmmk_product_type {
-	CMMK_PRODUCT_MASTERKEYS_PRO_L,
-	CMMK_PRODUCT_MASTERKEYS_PRO_S,
-	CMMK_PRODUCT_MASTERKEYS_MK750,
-};
-
 /*
  * The specific layout of a given device.
  */
@@ -83,11 +77,6 @@ enum cmmk_layout {
 	CMMK_LAYOUT_EU_MK750,
 
 	CMMK_LAYOUT_INVAL /* end marker */
-};
-
-enum cmmk_layout_type {
-	CMMK_LAYOUT_TYPE_ANSI,
-	CMMK_LAYOUT_TYPE_ISO
 };
 
 /* Apparently can be anything in range [0x00, 0x50].
@@ -143,6 +132,22 @@ enum cmmk_effect_id {
 	CMMK_EFFECT_OFF = 0xfe
 };
 
+/* These enums are only used for display or similar purposes.
+ *
+ * All the important layout information is contained in `enum cmmk_layout'.  But because
+ * most of the time, library users really want the model and layout information separated,
+ * these two helpers abstract it away a bit. */
+enum cmmk_layout_type {
+	CMMK_LAYOUT_TYPE_ANSI,
+	CMMK_LAYOUT_TYPE_ISO
+};
+
+enum cmmk_product_type {
+	CMMK_PRODUCT_MASTERKEYS_PRO_L,
+	CMMK_PRODUCT_MASTERKEYS_PRO_S,
+	CMMK_PRODUCT_MASTERKEYS_MK750,
+};
+
 
 /*
  * Attach to and detach from USB device
@@ -156,11 +161,6 @@ struct cmmk {
 	 */
 	int product;
 	int layout;
-
-	/* External product IDs that can be used for displaying or property queries for the
-	 * embedding application, conveniently separate the model from the layout. */
-	enum cmmk_product_type product_type;
-	enum cmmk_layout_type layout_type;
 
 	/*
 	 * Lookup map to get matrix positions for keys in constant time.
@@ -279,6 +279,9 @@ int cmmk_force_layout(struct cmmk *dev, int layout);
 
 /* fw must be up to 8 bytes to read the entire version string */
 int cmmk_get_firmware_version(struct cmmk *dev, char *fw, size_t fwsiz);
+
+enum cmmk_product_type cmmk_get_device_model(struct cmmk *dev);
+enum cmmk_layout_type cmmk_get_device_layout(struct cmmk *dev);
 
 /*
  * Enter and leave direct control mode. Any control commands outside of control
