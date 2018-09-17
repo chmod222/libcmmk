@@ -1,5 +1,5 @@
 #define CMMK_DECLARE_DEBUG_FUNCTIONS
-#include "libcmmk.h"
+#include <libcmmk/libcmmk.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,6 +78,10 @@ int main(int argc, char **argv)
 
 	struct cmmk state;
 
+	enum cmmk_effect_id enabled[10];
+	size_t n;
+	int i;
+
 	if (cmmk_find_device(&product) != 0) {
 		fprintf(stderr, "No device could be found\n");
 
@@ -86,11 +90,13 @@ int main(int argc, char **argv)
 
 	printf("Attaching to 2516:%04x...\n", product);
 
-	if (cmmk_attach(&state, product, CMMK_LAYOUT_US_S) != 0) {
+	if (cmmk_attach(&state, product, -1) != 0) {
 		fprintf(stderr, "Could not attach to device! Missing permissions?\n");
 
 		return 1;
 	}
+
+	printf("Layout detected as: %d\n", state.layout);
 
 	cmmk_get_firmware_version(&state, fw, sizeof(fw));
 
@@ -100,6 +106,12 @@ int main(int argc, char **argv)
 
 	printf("\n");
 	test_handshake2(&state);
+
+	cmmk_get_enabled_effects(&state, enabled, 10, &n);
+
+	for (i = 0; i < n; ++i) {
+		printf("Effect enabled: %d\n", enabled[i]);
+	}
 
 	cmmk_detach(&state);
 }

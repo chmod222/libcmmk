@@ -47,24 +47,21 @@ some samples and open a new issue for them.
 # Build requirements:
   - A C compiler from at least the current century (C99)
   - libusb-1.0
+  - cmake 3.0
 
-
-# Ubuntu
-
-## Install dependencies
-
+Build the library and main samples:
 ```
-sudo apt-get install libusb-1.0-0-dev
-```
-
-## Compile and run:
-
-```
-make clean && make
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=dist ..
+make && make install
 ```
 
-Requires root:
-
+Run the demo:
 ```
-sudo LD_LIBRARY_PATH=/path/to/out/subdirectory/out:$LD_LIBRARY_PATH ./out/cmmk-testsu
+# Requires root if udev rule is not installed
+
+LD_LIBRARY_PATH=dist/lib64 dist/bin/cmmk-test
+  -or-
+LD_LIBRARY_PATH=dist/lib dist/bin/cmmk-test
 ```

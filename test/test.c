@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with libcmmk.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "libcmmk.h"
+#include <libcmmk/libcmmk.h>
 
 #include <unistd.h> /* usleep() */
 
