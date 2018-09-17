@@ -271,14 +271,14 @@ int cmmk_find_device(int *product);
  *
  * If layout autodetection fails, 1 is returned and cmmk_detach is called implicitely.
  */
-int cmmk_attach(struct cmmk *state, int product, int layout);
-int cmmk_detach(struct cmmk *state);
+int cmmk_attach(struct cmmk *dev, int product, int layout);
+int cmmk_detach(struct cmmk *dev);
 
 /* Resets the layout to the given ID and regenerates lookup tables */
-int cmmk_force_layout(struct cmmk *state, int layout);
+int cmmk_force_layout(struct cmmk *dev, int layout);
 
 /* fw must be up to 8 bytes to read the entire version string */
-int cmmk_get_firmware_version(struct cmmk *state, char *fw, size_t fwsiz);
+int cmmk_get_firmware_version(struct cmmk *dev, char *fw, size_t fwsiz);
 
 /*
  * Enter and leave direct control mode. Any control commands outside of control
