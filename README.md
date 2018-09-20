@@ -44,6 +44,15 @@ from other models to try and decipher the remaining packets.
 So if you know you way around Wireshark and usbmon or similar capture tools, feel free to record 
 some samples and open a new issue for them.
 
+# Installation
+If you're using Arch Linux, you can [find `libcmmk` in the
+AUR](https://aur.archlinux.org/packages/libcmmk-git/). Depending on your AUR helper (e.g.
+[yay](https://github.com/Jguer/yay)), you can install it with:
+
+```
+yay -S libcmmk-git
+```
+
 # Build requirements:
   - A C compiler from at least the current century (C99)
   - libusb-1.0
