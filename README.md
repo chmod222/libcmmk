@@ -11,7 +11,7 @@ project.
 # Device Support
 The currently supported and known to work devices include:
 
- * MasterKeys Pro L, (EU / German only)
+ * MasterKeys Pro L, (US & EU / German)
  * MasterKeys Pro S, (US only)
  * MasterKeys MK750, (EU / German only)
 
