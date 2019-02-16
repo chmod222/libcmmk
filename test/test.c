@@ -16,21 +16,50 @@
  */
 #include <libcmmk/libcmmk.h>
 
+#ifdef WIN32
+#include <windows.h>
+#else
 #include <unistd.h> /* usleep() */
-
 #include <signal.h>
+#include <time.h> /* do we need this? */
+#endif
+
 #include <string.h> /* memset() */
 #include <stdio.h>
 #include <stdlib.h>
 
-
 int g_stop = 0;
 
+#ifdef WIN32
+BOOL WINAPI ctrl_handler(DWORD ctrlType)
+{
+	/* We only care about ctrl+c events. */
+	if (ctrlType == CTRL_C_EVENT) {
+		g_stop = 1;
+		return TRUE;
+	}
+	return FALSE;
+}
+#else
 static void interrupted(int sig)
 {
 	(void)sig;
 
 	g_stop = 1;
+}
+#endif
+
+void sleep_ms(int ms) {
+#ifdef WIN32
+	Sleep(ms);
+#elif _POSIX_C_SOURCE >= 199309L
+	struct timespec t;
+	t.tv_sec = ms / 1000;
+	t.tv_nsec = (ms % 1000) * 1000000;
+	nanosleep(t, NULL);
+#else
+	usleep(ms * 1000);
+#endif
 }
 
 int test_multilayer(struct cmmk *dev)
@@ -60,6 +89,10 @@ int test_multilayer(struct cmmk *dev)
 	};
 
 	map.data[0][0] = CMMK_EFFECT_WAVE;
+	map.data[4][16] = CMMK_EFFECT_WAVE;
+	map.data[5][15] = CMMK_EFFECT_WAVE;
+	map.data[5][16] = CMMK_EFFECT_WAVE;
+	map.data[5][17] = CMMK_EFFECT_WAVE;
 
 	memset(&map.data[1], CMMK_EFFECT_RAINDROPS, 15);
 	memset(&map.data[2], CMMK_EFFECT_RAINDROPS, 15);
@@ -81,12 +114,34 @@ int test_multilayer(struct cmmk *dev)
 	return 0;
 }
 
+int test_seq(struct cmmk *dev)
+{
+	/* Sequential demo.
+	 *
+	 * Lights up every key once, starting on the left and moving horizontally, row by row.
+	 */
+	struct rgb offcolor = MKRGB(0x000000);
+	struct rgb oncolor = MKRGB(0xffffff);
+	cmmk_set_control_mode(dev, CMMK_MANUAL);
+	cmmk_set_all_single(dev, &offcolor);
+	for (int row = 0; row < 7; ++row) {
+		for (int col = 0; col < 22; ++col) {
+			if (g_stop) { return 1; }
+			cmmk_set_single_key(dev, row, col, &oncolor);
+			sleep_ms(100);
+			cmmk_set_single_key(dev, row, col, &offcolor);
+		}
+	}
+	return 0;
+}
+
 int main(int argc, char** argv)
 {
 	(void)argc;
 	(void)argv;
 
 	struct cmmk state;
+	state.cxt = NULL;
 
 	int product;
 
@@ -94,16 +149,26 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	if (cmmk_attach(&state, product, CMMK_LAYOUT_EU_L) != 0) {
+	if (cmmk_attach(&state, product, CMMK_LAYOUT_US_L) != 0) {
 		return 1;
 	}
 
+#ifdef WIN32
+	SetConsoleCtrlHandler(ctrl_handler, TRUE);
+#else
 	signal(SIGINT, interrupted);
+#endif
 
 	test_multilayer(&state);
 
 	while (!g_stop) {
-		sleep(1);
+		sleep_ms(1000);
+	}
+
+	g_stop = 0;
+
+	while (!g_stop) {
+		test_seq(&state);
 	}
 
 	cmmk_set_control_mode(&state, CMMK_FIRMWARE);
