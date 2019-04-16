@@ -16,7 +16,9 @@
  */
 #include <libcmmk/libcmmk.h>
 
+#ifndef WIN32
 #include <unistd.h> /* getuid() */
+#endif
 #include <string.h> /* memset() */
 #include <assert.h>
 
@@ -302,9 +304,11 @@ int cmmk_attach(struct cmmk *dev, int product, int layout)
 	if (dev->dev == NULL)
 		goto out_step1;
 
+#ifndef WIN32 /* Kernel driver stuff doesn't exist on windows, so we skip it there. */
 	if (libusb_kernel_driver_active(dev->dev, CMMK_USB_INTERFACE))
 		if (libusb_detach_kernel_driver(dev->dev,  CMMK_USB_INTERFACE) != 0)
 			goto out_step2;
+#endif
 
 	if (libusb_claim_interface(dev->dev, CMMK_USB_INTERFACE) != 0)
 		goto out_step2;
@@ -334,7 +338,9 @@ out_step0: return 1;
 int cmmk_detach(struct cmmk *dev)
 {
 	libusb_release_interface(dev->dev, CMMK_USB_INTERFACE);
+#ifndef WIN32 /* Kernel driver stuff doesn't exist on windows, so we skip it there. */
 	libusb_attach_kernel_driver(dev->dev, CMMK_USB_INTERFACE);
+#endif
 
 	libusb_close(dev->dev);
 	libusb_exit(dev->cxt);
@@ -763,7 +769,11 @@ int cmmk_set_customized_leds(struct cmmk *dev, struct cmmk_color_matrix const *c
 	int i;
 	int j;
 
+#ifdef _MSC_VER
+	struct rgb linear[CMMK_KEYLIST_SIZE] = { 0 };
+#else
 	struct rgb linear[CMMK_KEYLIST_SIZE] = {};
+#endif
 	struct rgb *nextcol = linear;
 
 	transpose_reverse(dev, colmap, linear);
@@ -789,7 +799,11 @@ int cmmk_set_customized_leds(struct cmmk *dev, struct cmmk_color_matrix const *c
 
 int cmmk_get_customized_leds(struct cmmk *dev, struct cmmk_color_matrix *colmap)
 {
+#ifdef _MSC_VER
+	struct rgb linear[CMMK_KEYLIST_SIZE] = { 0 };
+#else
 	struct rgb linear[CMMK_KEYLIST_SIZE] = {};
+#endif
 
 	unsigned char data[64] = {0x52, 0xa8};
 
@@ -965,7 +979,11 @@ int cmmk_set_leds(struct cmmk *dev, struct cmmk_color_matrix const *colmap)
 	int i;
 	int j;
 
+#ifdef _MSC_VER
+	struct rgb linear[CMMK_KEYLIST_SIZE] = { 0 };
+#else
 	struct rgb linear[CMMK_KEYLIST_SIZE] = {};
+#endif
 	struct rgb *nextcol = linear;
 
 	transpose_reverse(dev, colmap, linear);

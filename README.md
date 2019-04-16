@@ -11,9 +11,9 @@ project.
 # Device Support
 The currently supported and known to work devices include:
 
- * MasterKeys Pro L, (EU / German only)
+ * MasterKeys Pro L, (US & EU / German)
  * MasterKeys Pro S, (US only)
- * MasterKeys MK750, (EU / German only)
+ * MasterKeys MK750, (US / EU / German only)
 
 In theory (and as a goal), this library should support any RGB (and in the future possibly monocolor)
 MasterKeys keyboards. Gaps in device support are currently a result of a lack of test devices. See
@@ -43,6 +43,15 @@ from other models to try and decipher the remaining packets.
 
 So if you know you way around Wireshark and usbmon or similar capture tools, feel free to record 
 some samples and open a new issue for them.
+
+# Installation
+If you're using Arch Linux, you can [find `libcmmk` in the
+AUR](https://aur.archlinux.org/packages/libcmmk-git/). Depending on your AUR helper (e.g.
+[yay](https://github.com/Jguer/yay)), you can install it with:
+
+```
+yay -S libcmmk-git
+```
 
 # Build requirements:
   - A C compiler from at least the current century (C99)
