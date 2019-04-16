@@ -13,7 +13,7 @@ The currently supported and known to work devices include:
 
  * MasterKeys Pro L, (EU / German only)
  * MasterKeys Pro S, (US only)
- * MasterKeys MK750, (EU / German only)
+ * MasterKeys MK750, (US / EU / German only)
 
 In theory (and as a goal), this library should support any RGB (and in the future possibly monocolor)
 MasterKeys keyboards. Gaps in device support are currently a result of a lack of test devices. See
