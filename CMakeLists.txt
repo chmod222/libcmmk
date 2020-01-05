@@ -21,6 +21,7 @@ set_target_properties(cmmk_obj PROPERTIES
 IF(NOT WIN32)
 	target_compile_options(cmmk_obj PUBLIC "-Wall")
 	target_compile_options(cmmk_obj PUBLIC "-Wextra")
+	target_compile_options(cmmk_obj PUBLIC "-fPIC")
 ENDIF()
 
 add_library(cmmk_shared SHARED $<TARGET_OBJECTS:cmmk_obj>)
