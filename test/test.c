@@ -148,6 +148,7 @@ int main(int argc, char** argv)
 	if (cmmk_find_device(&product) != 0) {
 		return 1;
 	}
+	printf("Product: %s\n", cmmk_product_to_str(product));
 
 	if (cmmk_attach(&state, product, CMMK_LAYOUT_US_L) != 0) {
 		return 1;

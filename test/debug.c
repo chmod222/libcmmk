@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	printf("Attaching to 2516:%04x...\n", product);
+	printf("Attaching to 2516:%04x alias \"%s\"...\n", product, cmmk_product_to_str(product));
 
 	if (cmmk_attach(&state, product, -1) != 0) {
 		fprintf(stderr, "Could not attach to device! Missing permissions?\n");
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	printf("Layout detected as: %d\n", state.layout);
+	printf("Layout detected as: %d alias \"%s\"\n", state.layout, cmmk_layout_to_str(state.layout));
 
 	cmmk_get_firmware_version(&state, fw, sizeof(fw));
 

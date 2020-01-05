@@ -287,6 +287,9 @@ int cmmk_get_firmware_version(struct cmmk *dev, char *fw, size_t fwsiz);
 enum cmmk_product_type cmmk_get_device_model(struct cmmk *dev);
 enum cmmk_layout_type cmmk_get_device_layout(struct cmmk *dev);
 
+const char * cmmk_product_to_str(int product);
+const char * cmmk_layout_to_str(int layout);
+
 /*
  * Enter and leave direct control mode. Any control commands outside of control
  * mode are ignored. Enabling control mode while inside control mode will reset
