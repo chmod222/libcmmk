@@ -439,6 +439,39 @@ enum cmmk_layout_type cmmk_get_device_layout(struct cmmk *dev)
 	assert(0 && "unreachable");
 }
 
+const char * cmmk_product_to_str(int product)
+{
+	switch ((enum cmmk_product) product) {
+		case CMMK_USB_MASTERKEYS_PRO_S: return "Cooler Master Masterkeys Pro S";
+		case CMMK_USB_MASTERKEYS_PRO_L: return "Cooler Master Masterkeys Pro L";
+		case CMMK_USB_MASTERKEYS_MK750: return "Cooler Master Masterkeys MK750";
+		case CMMK_USB_MASTERKEYS_SK630: return "Cooler Master Masterkeys SK630";
+	}
+
+	return "unknown";
+}
+
+const char * cmmk_layout_to_str(int layout)
+{
+	switch ((enum cmmk_layout) layout) {
+		case CMMK_LAYOUT_US_S:
+		case CMMK_LAYOUT_US_L:
+		case CMMK_LAYOUT_US_MK750:
+		case CMMK_LAYOUT_US_SK630:
+			return "US";
+		case CMMK_LAYOUT_EU_S:
+		case CMMK_LAYOUT_EU_L:
+		case CMMK_LAYOUT_EU_MK750:
+		case CMMK_LAYOUT_EU_SK630:
+			return "EU";
+
+		case CMMK_LAYOUT_INVAL:
+			return "invalid";
+	}
+
+	return "unknown";
+}
+
 /*
  * Enter and leave direct control mode. Any control commands outside of control
  * mode are ignored.
