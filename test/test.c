@@ -150,9 +150,10 @@ int main(int argc, char** argv)
 	}
 	printf("Product: %s\n", cmmk_product_to_str(product));
 
-	if (cmmk_attach(&state, product, CMMK_LAYOUT_US_L) != 0) {
+	if (cmmk_attach(&state, product, -1) != 0) {
 		return 1;
 	}
+	printf("Layout: %s\n", cmmk_layout_to_str(state.layout));
 
 #ifdef WIN32
 	SetConsoleCtrlHandler(ctrl_handler, TRUE);
