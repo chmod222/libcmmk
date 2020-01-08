@@ -19,5 +19,9 @@ target_include_directories(cmmk-debug PRIVATE
 
 IF (NOT WIN32)
 	install(TARGETS cmmk-test cmmk-debug
-		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+		CONFIGURATIONS Debug
+		RUNTIME DESTINATION bin/debug)
+	install(TARGETS cmmk-test cmmk-debug
+		CONFIGURATIONS Release
+		RUNTIME DESTINATION bin/release)
 ENDIF()
