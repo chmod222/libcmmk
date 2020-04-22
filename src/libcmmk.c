@@ -194,9 +194,9 @@ int cmmk_find_device(int *product)
 {
 	static int supported_devices[] = {
 		CMMK_USB_MASTERKEYS_PRO_L,
-		CMMK_USB_MASTERKEYS_PRO_L_WHITE,
 		CMMK_USB_MASTERKEYS_PRO_S,
-		CMMK_USB_MASTERKEYS_MK750
+		CMMK_USB_MASTERKEYS_MK750,
+		CMMK_USB_MASTERKEYS_PRO_L_WHITE,
 	};
 
 	libusb_context *context = NULL;
@@ -266,10 +266,8 @@ static int cmmk_try_determine_layout(struct cmmk *dev, int product)
 
 	switch (product) {
 		case CMMK_USB_MASTERKEYS_PRO_L:
-			device_model = CMMK_PRODUCT_MASTERKEYS_PRO_L;
-			break;
 		case CMMK_USB_MASTERKEYS_PRO_L_WHITE:
-			device_model = CMMK_PRODUCT_MASTERKEYS_PRO_L_WHITE;
+			device_model = CMMK_PRODUCT_MASTERKEYS_PRO_L;
 			break;
 		case CMMK_USB_MASTERKEYS_PRO_S:
 			device_model = CMMK_PRODUCT_MASTERKEYS_PRO_S;
@@ -282,7 +280,6 @@ static int cmmk_try_determine_layout(struct cmmk *dev, int product)
 	if (general_layout == CMMK_LAYOUT_TYPE_ANSI) {
 		switch (device_model) {
 			case CMMK_PRODUCT_MASTERKEYS_PRO_L:
-			case CMMK_PRODUCT_MASTERKEYS_PRO_L_WHITE:
 				return CMMK_LAYOUT_US_L;
 			case CMMK_PRODUCT_MASTERKEYS_PRO_S:
 				return CMMK_LAYOUT_US_S;
@@ -292,7 +289,6 @@ static int cmmk_try_determine_layout(struct cmmk *dev, int product)
 	} else {
 		switch (device_model) {
 			case CMMK_PRODUCT_MASTERKEYS_PRO_L:
-			case CMMK_PRODUCT_MASTERKEYS_PRO_L_WHITE:
 				return CMMK_LAYOUT_EU_L;
 			case CMMK_PRODUCT_MASTERKEYS_PRO_S:
 				return CMMK_LAYOUT_EU_S;
