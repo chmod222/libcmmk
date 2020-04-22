@@ -266,34 +266,22 @@ static int cmmk_try_determine_layout(struct cmmk *dev, int product)
 
 	switch (product) {
 		case CMMK_USB_MASTERKEYS_PRO_L:
-		case CMMK_USB_MASTERKEYS_PRO_L_WHITE:
-			device_model = CMMK_PRODUCT_MASTERKEYS_PRO_L;
-			break;
-		case CMMK_USB_MASTERKEYS_PRO_S:
-			device_model = CMMK_PRODUCT_MASTERKEYS_PRO_S;
-			break;
-		case CMMK_USB_MASTERKEYS_MK750:
-			device_model = CMMK_PRODUCT_MASTERKEYS_MK750;
-			break;
+		case CMMK_USB_MASTERKEYS_PRO_L_WHITE: device_model = CMMK_PRODUCT_MASTERKEYS_PRO_L; break;
+		case CMMK_USB_MASTERKEYS_PRO_S: device_model = CMMK_PRODUCT_MASTERKEYS_PRO_S; break;
+		case CMMK_USB_MASTERKEYS_MK750: device_model = CMMK_PRODUCT_MASTERKEYS_MK750; break;
 	}
 
 	if (general_layout == CMMK_LAYOUT_TYPE_ANSI) {
 		switch (device_model) {
-			case CMMK_PRODUCT_MASTERKEYS_PRO_L:
-				return CMMK_LAYOUT_US_L;
-			case CMMK_PRODUCT_MASTERKEYS_PRO_S:
-				return CMMK_LAYOUT_US_S;
-			case CMMK_PRODUCT_MASTERKEYS_MK750:
-				return CMMK_LAYOUT_US_MK750;
+			case CMMK_PRODUCT_MASTERKEYS_PRO_L: return CMMK_LAYOUT_US_L;
+			case CMMK_PRODUCT_MASTERKEYS_PRO_S: return CMMK_LAYOUT_US_S;
+			case CMMK_PRODUCT_MASTERKEYS_MK750: return CMMK_LAYOUT_US_MK750;
 		}
 	} else {
 		switch (device_model) {
-			case CMMK_PRODUCT_MASTERKEYS_PRO_L:
-				return CMMK_LAYOUT_EU_L;
-			case CMMK_PRODUCT_MASTERKEYS_PRO_S:
-				return CMMK_LAYOUT_EU_S;
-			case CMMK_PRODUCT_MASTERKEYS_MK750:
-				return CMMK_LAYOUT_EU_MK750;
+			case CMMK_PRODUCT_MASTERKEYS_PRO_L: return CMMK_LAYOUT_EU_L;
+			case CMMK_PRODUCT_MASTERKEYS_PRO_S: return CMMK_LAYOUT_EU_S;
+			case CMMK_PRODUCT_MASTERKEYS_MK750: return CMMK_LAYOUT_EU_MK750;
 		}
 	}
 
