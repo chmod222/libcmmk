@@ -41,9 +41,11 @@ static keyboard_layout const *keyboard_layouts[] = {
 	[CMMK_LAYOUT_US_S] = &layout_us_s,
 	[CMMK_LAYOUT_US_L] = &layout_us_l,
 	[CMMK_LAYOUT_US_MK750] = &layout_us_mk750,
+	[CMMK_LAYOUT_US_SK630] = &layout_us_sk630,
 	[CMMK_LAYOUT_EU_S] = &layout_eu_s,
 	[CMMK_LAYOUT_EU_L] = &layout_eu_l,
 	[CMMK_LAYOUT_EU_MK750] = &layout_eu_mk750,
+	[CMMK_LAYOUT_EU_SK630] = &layout_eu_sk630,
 };
 
 /* Some global definitions */
@@ -197,6 +199,7 @@ int cmmk_find_device(int *product)
 		CMMK_USB_MASTERKEYS_PRO_S,
 		CMMK_USB_MASTERKEYS_MK750,
 		CMMK_USB_MASTERKEYS_PRO_L_WHITE,
+		CMMK_USB_MASTERKEYS_SK630
 	};
 
 	libusb_context *context = NULL;
@@ -264,11 +267,12 @@ static int cmmk_try_determine_layout(struct cmmk *dev, int product)
 		}
 	}
 
-	switch (product) {
+	switch ((enum cmmk_product) product) {
 		case CMMK_USB_MASTERKEYS_PRO_L:
 		case CMMK_USB_MASTERKEYS_PRO_L_WHITE: device_model = CMMK_PRODUCT_MASTERKEYS_PRO_L; break;
 		case CMMK_USB_MASTERKEYS_PRO_S: device_model = CMMK_PRODUCT_MASTERKEYS_PRO_S; break;
 		case CMMK_USB_MASTERKEYS_MK750: device_model = CMMK_PRODUCT_MASTERKEYS_MK750; break;
+		case CMMK_USB_MASTERKEYS_SK630: device_model = CMMK_PRODUCT_MASTERKEYS_SK630; break;
 	}
 
 	if (general_layout == CMMK_LAYOUT_TYPE_ANSI) {
@@ -276,12 +280,14 @@ static int cmmk_try_determine_layout(struct cmmk *dev, int product)
 			case CMMK_PRODUCT_MASTERKEYS_PRO_L: return CMMK_LAYOUT_US_L;
 			case CMMK_PRODUCT_MASTERKEYS_PRO_S: return CMMK_LAYOUT_US_S;
 			case CMMK_PRODUCT_MASTERKEYS_MK750: return CMMK_LAYOUT_US_MK750;
+			case CMMK_PRODUCT_MASTERKEYS_SK630: return CMMK_LAYOUT_US_SK630;
 		}
 	} else {
 		switch (device_model) {
 			case CMMK_PRODUCT_MASTERKEYS_PRO_L: return CMMK_LAYOUT_EU_L;
 			case CMMK_PRODUCT_MASTERKEYS_PRO_S: return CMMK_LAYOUT_EU_S;
 			case CMMK_PRODUCT_MASTERKEYS_MK750: return CMMK_LAYOUT_EU_MK750;
+			case CMMK_PRODUCT_MASTERKEYS_SK630: return CMMK_LAYOUT_EU_SK630;
 		}
 	}
 
