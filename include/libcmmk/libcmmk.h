@@ -61,6 +61,7 @@ enum cmmk_result {
  */
 enum cmmk_product {
 	CMMK_USB_MASTERKEYS_PRO_L = 0x003b,
+	CMMK_USB_MASTERKEYS_PRO_L_WHITE = 0x0047,
 	CMMK_USB_MASTERKEYS_PRO_S = 0x003c,
 	CMMK_USB_MASTERKEYS_MK750 = 0x0067,
 };
@@ -145,9 +146,8 @@ enum cmmk_layout_type {
 enum cmmk_product_type {
 	CMMK_PRODUCT_MASTERKEYS_PRO_L,
 	CMMK_PRODUCT_MASTERKEYS_PRO_S,
-	CMMK_PRODUCT_MASTERKEYS_MK750,
+	CMMK_PRODUCT_MASTERKEYS_MK750
 };
-
 
 /*
  * Attach to and detach from USB device
