@@ -200,12 +200,7 @@ int cmmk_find_device(int *product)
 
 	struct hid_device_info *list = NULL;
 
-	int r;
 	int res = 1;
-
-	if ((r = hid_init()) != 0) {
-		return 1;
-	}
 
 	list = hid_enumerate(CMMK_USB_VENDOR, 0);
 
@@ -216,14 +211,12 @@ int cmmk_find_device(int *product)
 
 				res = 0;
 
-				goto out;
+				break;
 			}
 		}
 	}
 
-out:
 	hid_free_enumeration(list);
-	hid_exit();
 
 	return res;
 }
@@ -279,10 +272,6 @@ int cmmk_attach(struct cmmk *dev, int product, int layout)
 {
 	struct hid_device_info *list;
 
-	if (hid_init()) {
-		goto out_step0;
-	}
-	
 	list = hid_enumerate(CMMK_USB_VENDOR, product);
 
 	dev->product = product;
@@ -318,19 +307,12 @@ int cmmk_attach(struct cmmk *dev, int product, int layout)
 
 		return CMMK_OK;
 	} else {
-out_step0: 
-		hid_exit();
-
 		return 1;
 	}
 }
 
 int cmmk_attach_path(struct cmmk *dev, char const *path, int product, int layout)
 {
-	if (hid_init()) {
-		return 1;
-	}
-
 	dev->dev = hid_open_path(path);
 
 	if (dev->dev != NULL) {
@@ -354,7 +336,6 @@ int cmmk_attach_path(struct cmmk *dev, char const *path, int product, int layout
 int cmmk_detach(struct cmmk *dev)
 {
 	hid_close(dev->dev);
-	hid_exit();
 
 	return CMMK_OK;
 }
