@@ -423,6 +423,7 @@ const char * cmmk_product_to_str(int product)
 	switch ((enum cmmk_product) product) {
 		case CMMK_USB_MASTERKEYS_PRO_S: return "Cooler Master Masterkeys Pro S";
 		case CMMK_USB_MASTERKEYS_PRO_L: return "Cooler Master Masterkeys Pro L";
+		case CMMK_USB_MASTERKEYS_PRO_L_WHITE: return "Cooler Master Masterkeys Pro L White";
 		case CMMK_USB_MASTERKEYS_MK750: return "Cooler Master Masterkeys MK750";
 		case CMMK_USB_MASTERKEYS_SK630: return "Cooler Master Masterkeys SK630";
 	}
