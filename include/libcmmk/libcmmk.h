@@ -278,6 +278,7 @@ int cmmk_find_device(int *product);
  * If layout autodetection fails, 1 is returned and cmmk_detach is called implicitely.
  */
 int cmmk_attach(struct cmmk *dev, int product, int layout);
+int cmmk_attach_path(struct cmmk *dev, char const *path, int product, int layout);
 int cmmk_detach(struct cmmk *dev);
 
 /* Resets the layout to the given ID and regenerates lookup tables */

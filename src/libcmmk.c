@@ -325,6 +325,32 @@ out_step0:
 	}
 }
 
+int cmmk_attach_path(struct cmmk *dev, char const *path, int product, int layout)
+{
+	if (hid_init()) {
+		return 1;
+	}
+
+	dev->dev = hid_open_path(path);
+
+	if (dev->dev != NULL) {
+		if (layout < 0) {
+			layout = cmmk_try_determine_layout(dev, product);
+		}
+
+		/*
+		* Generate lookup map
+		*/
+		cmmk_force_layout(dev, layout);
+
+		dev->multilayer_mode = 0;
+
+		return CMMK_OK;
+	} else {
+		return 1;
+	}
+}
+
 int cmmk_detach(struct cmmk *dev)
 {
 	hid_close(dev->dev);

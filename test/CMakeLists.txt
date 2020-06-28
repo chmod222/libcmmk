@@ -8,8 +8,8 @@ IF (WIN32)
 	target_link_libraries(cmmk-test cmmk_shared)
 	target_link_libraries(cmmk-debug cmmk_shared)
 ELSE()
-	target_link_libraries(cmmk-test cmmk_shared hidapi-libusb)
-	target_link_libraries(cmmk-debug cmmk_shared hidapi-libusb)
+	target_link_libraries(cmmk-test cmmk_shared hidapi-hidraw)
+	target_link_libraries(cmmk-debug cmmk_shared hidapi-hidraw)
 ENDIF()
 
 target_include_directories(cmmk-test PRIVATE
