@@ -17,7 +17,9 @@
 #ifndef LIBCMMK_H
 #define LIBCMMK_H
 
-#include <libusb-1.0/libusb.h>
+#include <hidapi/hidapi.h>
+
+#include <stdint.h>
 
 #if defined(__cplusplus)
 extern "C" {
@@ -157,8 +159,8 @@ enum cmmk_product_type {
  * Attach to and detach from USB device
  */
 struct cmmk {
-	libusb_context *cxt;
-	libusb_device_handle *dev;
+	/* libusb_context *cxt; */
+	hid_device *dev;
 
 	/*
 	 * Internal product IDs that are not all that useful outside the library.

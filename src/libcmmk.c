@@ -22,9 +22,7 @@
 #include <string.h> /* memset() */
 #include <assert.h>
 
-#include <libusb-1.0/libusb.h>
-
-#undef CMMK_TRACE
+#include <hidapi/hidapi.h>
 
 #ifdef CMMK_TRACE
 #include <stdio.h>
@@ -167,20 +165,18 @@ static void hexdump(void const *ptr, size_t buflen)
 }
 #endif
 
-static int send_command(libusb_device_handle *dev, unsigned char *data, size_t datasiz)
+static int send_command(hid_device *dev, unsigned char *data, size_t datasiz)
 {
-	int tx;
-
 #ifdef CMMK_TRACE
 	printf(">>\n");
 	hexdump(data, datasiz);
 #endif
 
-	if (libusb_interrupt_transfer(dev, CMMK_USB_EP_IN, data, datasiz, &tx, 0) != 0) {
+	if (hid_write(dev, data, datasiz) < 0) {
 		return CMMK_USB_COMM;
 	}
 
-	if (libusb_interrupt_transfer(dev, CMMK_USB_EP_OUT, data, datasiz, &tx, 0) != 0) {
+	if (hid_read(dev, data, datasiz) < 0) {
 		return CMMK_USB_COMM;
 	}
 
@@ -202,40 +198,21 @@ int cmmk_find_device(int *product)
 		CMMK_USB_MASTERKEYS_SK630
 	};
 
-	libusb_context *context = NULL;
-	libusb_device **list = NULL;
+	struct hid_device_info *list = NULL;
 
 	int r;
 	int res = 1;
-	ssize_t n;
 
-	if ((r = libusb_init(&context)) != 0) {
+	if ((r = hid_init()) != 0) {
 		return 1;
 	}
 
-	n = libusb_get_device_list(context, &list);
+	list = hid_enumerate(CMMK_USB_VENDOR, 0);
 
-	if (n <= 0) {
-		goto out;
-	}
-
-	for (size_t i = 0; i < (size_t)n; ++i) {
-		libusb_device *device = list[i];
-		struct libusb_device_descriptor desc = {0};
-
-		r = libusb_get_device_descriptor(device, &desc);
-
-		if (r != 0) {
-			goto out;
-		}
-
-		if (desc.idVendor != CMMK_USB_VENDOR) {
-			continue;
-		}
-
+	for (struct hid_device_info *dev = list; dev != NULL; dev = dev->next) {
 		for (size_t j = 0; j < (sizeof(supported_devices) / sizeof(supported_devices[0])); ++j) {
-			if (desc.idProduct == supported_devices[j]) {
-				*product = desc.idProduct;
+			if (dev->product_id == supported_devices[j] && dev->interface_number == CMMK_USB_INTERFACE) {
+				*product = dev->product_id;
 
 				res = 0;
 
@@ -245,11 +222,12 @@ int cmmk_find_device(int *product)
 	}
 
 out:
-	libusb_free_device_list(list, n);
-	libusb_exit(context);
+	hid_free_enumeration(list);
+	hid_exit();
 
 	return res;
 }
+
 
 static int cmmk_try_determine_layout(struct cmmk *dev, int product)
 {
@@ -299,59 +277,58 @@ static int cmmk_try_determine_layout(struct cmmk *dev, int product)
  */
 int cmmk_attach(struct cmmk *dev, int product, int layout)
 {
-	if (libusb_init(&dev->cxt) != 0)
-		goto out_step0;
+	struct hid_device_info *list;
 
-	dev->dev = libusb_open_device_with_vid_pid(
-			dev->cxt,
-			CMMK_USB_VENDOR,
-			product);
+	if (hid_init()) {
+		goto out_step0;
+	}
+	
+	list = hid_enumerate(CMMK_USB_VENDOR, product);
 
 	dev->product = product;
 
-	if (dev->dev == NULL)
-		goto out_step1;
-
-#ifndef WIN32 /* Kernel driver stuff doesn't exist on windows, so we skip it there. */
-	if (libusb_kernel_driver_active(dev->dev, CMMK_USB_INTERFACE))
-		if (libusb_detach_kernel_driver(dev->dev,  CMMK_USB_INTERFACE) != 0)
-			goto out_step2;
-#endif
-
-	if (libusb_claim_interface(dev->dev, CMMK_USB_INTERFACE) != 0)
-		goto out_step2;
-
-	if (layout < 0) {
-		if ((layout = cmmk_try_determine_layout(dev, product)) < 0) {
-			cmmk_detach(dev);
-
-			return CMMK_LAYOUT_DETECTION_FAILED;
+	for (struct hid_device_info *dev_info = list; dev_info != NULL; dev_info = dev_info->next) {
+		if (dev_info->interface_number != CMMK_USB_INTERFACE) {
+			continue;
 		}
+
+		dev->dev = hid_open_path(dev_info->path);
+
+		if (layout < 0) {
+			if ((layout = cmmk_try_determine_layout(dev, product)) < 0) {
+				hid_free_enumeration(list);
+				cmmk_detach(dev);
+
+				return CMMK_LAYOUT_DETECTION_FAILED;
+			}
+		}
+
+		break;
 	}
+	
+	hid_free_enumeration(list);
 
-	/*
-	 * Generate lookup map
-	 */
-	cmmk_force_layout(dev, layout);
+	if (dev->dev != NULL) {
+		/*
+		* Generate lookup map
+		*/
+		cmmk_force_layout(dev, layout);
 
-	dev->multilayer_mode = 0;
+		dev->multilayer_mode = 0;
 
-	return CMMK_OK;
+		return CMMK_OK;
+	} else {
+out_step0: 
+		hid_exit();
 
-out_step2: libusb_close(dev->dev);
-out_step1: libusb_exit(dev->cxt);
-out_step0: return 1;
+		return 1;
+	}
 }
 
 int cmmk_detach(struct cmmk *dev)
 {
-	libusb_release_interface(dev->dev, CMMK_USB_INTERFACE);
-#ifndef WIN32 /* Kernel driver stuff doesn't exist on windows, so we skip it there. */
-	libusb_attach_kernel_driver(dev->dev, CMMK_USB_INTERFACE);
-#endif
-
-	libusb_close(dev->dev);
-	libusb_exit(dev->cxt);
+	hid_close(dev->dev);
+	hid_exit();
 
 	return CMMK_OK;
 }
@@ -388,7 +365,7 @@ int cmmk_force_layout(struct cmmk *dev, int layout)
 
 int cmmk_get_firmware_version(struct cmmk *dev, char *fw, size_t fwsiz)
 {
-	unsigned char data[64] = {0x01, 0x02};
+	unsigned char data[65] = { 0x01, 0x02 };
 	int r;
 
 	if ((r = send_command(dev->dev, data, sizeof(data))) != 0) {
