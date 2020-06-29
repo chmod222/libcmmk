@@ -977,6 +977,12 @@ int cmmk_set_single_key(struct cmmk *dev, int row, int col, struct rgb const *co
 	return cmmk_set_single_key_by_id(dev, key, color);
 }
 
+int cmmk_lookup_key_id(struct cmmk *dev, int row, int col)
+{
+	return cmmk_from_row_col(dev, row, col);
+}
+
+
 /*
  * Set the entire keyboard to the given color.
  */

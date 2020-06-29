@@ -393,12 +393,11 @@ int cmmk_set_single_key_by_id(struct cmmk *dev, int key, struct rgb const *color
  * Set the single key in row `row` and column `col` to the given color.
  */
 int cmmk_set_single_key(struct cmmk *dev, int row, int col, struct rgb const *color);
-
+int cmmk_lookup_key_id(struct cmmk *dev, int row, int col);
 /*
  * Set the entire keyboard to the given color.
  */
 int cmmk_set_all_single(struct cmmk *dev, struct rgb const *col);
-
 /*
  * Set the entire keyboard in one step from the given map.
  *
