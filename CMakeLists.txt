@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.0)
-project(libcmmk VERSION 0.2 LANGUAGES C)
+
+project(libcmmk VERSION 0.2.0 LANGUAGES C)
 
 #
 # Build section
 #
 add_library(cmmk_obj OBJECT
 	src/libcmmk.c)
+
+configure_file(config.h.in include/libcmmk/libcmmk-config.h)
 
 find_package(HIDAPI QUIET COMPONENTS libusb)
 
@@ -55,6 +58,6 @@ IF(NOT WIN32)
 		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 		PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-	#install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+	install(FILES ${CMAKE_BINARY_DIR}/include/libcmmk/libcmmk-config.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 ENDIF()
