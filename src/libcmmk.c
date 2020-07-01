@@ -32,18 +32,25 @@
 /* Initialize keyboard layouts */
 typedef int16_t keyboard_layout[CMMK_ROWS_MAX][CMMK_COLS_MAX];
 
-#include "keymap_eu.h"
-#include "keymap_us.h"
+#include "mappings/iso/pro_s.h"
+#include "mappings/iso/pro_l.h"
+#include "mappings/iso/mk750.h"
+#include "mappings/iso/sk630.h"
+
+#include "mappings/ansi/pro_s.h"
+#include "mappings/ansi/pro_l.h"
+#include "mappings/ansi/mk750.h"
+#include "mappings/ansi/sk630.h"
 
 static keyboard_layout const *keyboard_layouts[] = {
-	[CMMK_LAYOUT_US_S] = &layout_us_s,
-	[CMMK_LAYOUT_US_L] = &layout_us_l,
-	[CMMK_LAYOUT_US_MK750] = &layout_us_mk750,
-	[CMMK_LAYOUT_US_SK630] = &layout_us_sk630,
-	[CMMK_LAYOUT_EU_S] = &layout_eu_s,
-	[CMMK_LAYOUT_EU_L] = &layout_eu_l,
-	[CMMK_LAYOUT_EU_MK750] = &layout_eu_mk750,
-	[CMMK_LAYOUT_EU_SK630] = &layout_eu_sk630,
+	[CMMK_LAYOUT_US_S] = &layout_ansi_pro_s,
+	[CMMK_LAYOUT_US_L] = &layout_ansi_pro_l,
+	[CMMK_LAYOUT_US_MK750] = &layout_ansi_mk750,
+	[CMMK_LAYOUT_US_SK630] = &layout_ansi_sk630,
+	[CMMK_LAYOUT_EU_S] = &layout_iso_pro_s,
+	[CMMK_LAYOUT_EU_L] = &layout_iso_pro_l,
+	[CMMK_LAYOUT_EU_MK750] = &layout_iso_mk750,
+	[CMMK_LAYOUT_EU_SK630] = &layout_iso_sk630,
 };
 
 /* Some global definitions */
