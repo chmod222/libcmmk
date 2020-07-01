@@ -957,7 +957,7 @@ int cmmk_set_multilayer_map(struct cmmk *dev, struct cmmk_effect_matrix const *e
 	return CMMK_OK;
 }
 
-static int cmmk_from_row_col(struct cmmk *dev, unsigned row, unsigned col)
+int cmmk_lookup_key_id(struct cmmk *dev, int row, int col)
 {
 	keyboard_layout const *layout = keyboard_layouts[dev->layout];
 
@@ -979,14 +979,9 @@ int cmmk_set_single_key_by_id(struct cmmk *dev, int key, struct rgb const *color
  */
 int cmmk_set_single_key(struct cmmk *dev, int row, int col, struct rgb const *color)
 {
-	int key = cmmk_from_row_col(dev, row, col);
+	int key = cmmk_lookup_key_id(dev, row, col);
 
 	return cmmk_set_single_key_by_id(dev, key, color);
-}
-
-int cmmk_lookup_key_id(struct cmmk *dev, int row, int col)
-{
-	return cmmk_from_row_col(dev, row, col);
 }
 
 
