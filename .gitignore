@@ -1,3 +1,10 @@
 *.o
+*.a
+*.so
 out/
 build/
+CMakeFiles/
+*.cmake
+CMakeCache.txt
+install_manifest.txt
+Makefile
