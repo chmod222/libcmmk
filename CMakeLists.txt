@@ -7,6 +7,8 @@ project(libcmmk VERSION 0.2 LANGUAGES C)
 add_library(cmmk_obj OBJECT
 	src/libcmmk.c)
 
+find_package(HIDAPI QUIET COMPONENTS libusb)
+
 target_include_directories(cmmk_obj
 	PUBLIC
 		$<INSTALL_INTERFACE:include>

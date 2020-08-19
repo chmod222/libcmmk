@@ -1,12 +1,15 @@
 add_executable(cmmk-test test.c)
 add_executable(cmmk-debug debug.c)
 
+find_package(HIDAPI QUIET COMPONENTS libusb)
+add_definitions(-DCMMK_TRACE)
+
 IF (WIN32)
 	target_link_libraries(cmmk-test cmmk_shared)
 	target_link_libraries(cmmk-debug cmmk_shared)
 ELSE()
-	target_link_libraries(cmmk-test cmmk_shared usb-1.0)
-	target_link_libraries(cmmk-debug cmmk_shared usb-1.0)
+	target_link_libraries(cmmk-test cmmk_shared hidapi-hidraw)
+	target_link_libraries(cmmk-debug cmmk_shared hidapi-hidraw)
 ENDIF()
 
 target_include_directories(cmmk-test PRIVATE

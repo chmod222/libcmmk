@@ -22,9 +22,7 @@
 #include <string.h> /* memset() */
 #include <assert.h>
 
-#include <libusb-1.0/libusb.h>
-
-#undef CMMK_TRACE
+#include <hidapi/hidapi.h>
 
 #ifdef CMMK_TRACE
 #include <stdio.h>
@@ -169,20 +167,18 @@ static void hexdump(void const *ptr, size_t buflen)
 }
 #endif
 
-static int send_command(libusb_device_handle *dev, unsigned char *data, size_t datasiz)
+static int send_command(hid_device *dev, unsigned char *data, size_t datasiz)
 {
-	int tx;
-
 #ifdef CMMK_TRACE
 	printf(">>\n");
 	hexdump(data, datasiz);
 #endif
 
-	if (libusb_interrupt_transfer(dev, CMMK_USB_EP_IN, data, datasiz, &tx, 0) != 0) {
+	if (hid_write(dev, data, datasiz) < 0) {
 		return CMMK_USB_COMM;
 	}
 
-	if (libusb_interrupt_transfer(dev, CMMK_USB_EP_OUT, data, datasiz, &tx, 0) != 0) {
+	if (hid_read(dev, data, datasiz) < 0) {
 		return CMMK_USB_COMM;
 	}
 
@@ -200,58 +196,34 @@ int cmmk_find_device(int *product)
 		CMMK_USB_MASTERKEYS_PRO_L,
 		CMMK_USB_MASTERKEYS_PRO_S,
 		CMMK_USB_MASTERKEYS_MK750,
+		CMMK_USB_MASTERKEYS_PRO_L_WHITE,
 		CMMK_USB_MASTERKEYS_SK630,
 		CMMK_USB_MASTERKEYS_SK650,
 	};
 
-	libusb_context *context = NULL;
-	libusb_device **list = NULL;
+	struct hid_device_info *list = NULL;
 
-	int r;
 	int res = 1;
-	ssize_t n;
 
-	if ((r = libusb_init(&context)) != 0) {
-		return 1;
-	}
+	list = hid_enumerate(CMMK_USB_VENDOR, 0);
 
-	n = libusb_get_device_list(context, &list);
-
-	if (n <= 0) {
-		goto out;
-	}
-
-	for (size_t i = 0; i < (size_t)n; ++i) {
-		libusb_device *device = list[i];
-		struct libusb_device_descriptor desc = {0};
-
-		r = libusb_get_device_descriptor(device, &desc);
-
-		if (r != 0) {
-			goto out;
-		}
-
-		if (desc.idVendor != CMMK_USB_VENDOR) {
-			continue;
-		}
-
+	for (struct hid_device_info *dev = list; dev != NULL; dev = dev->next) {
 		for (size_t j = 0; j < (sizeof(supported_devices) / sizeof(supported_devices[0])); ++j) {
-			if (desc.idProduct == supported_devices[j]) {
-				*product = desc.idProduct;
+			if (dev->product_id == supported_devices[j] && dev->interface_number == CMMK_USB_INTERFACE) {
+				*product = dev->product_id;
 
 				res = 0;
 
-				goto out;
+				break;
 			}
 		}
 	}
 
-out:
-	libusb_free_device_list(list, n);
-	libusb_exit(context);
+	hid_free_enumeration(list);
 
 	return res;
 }
+
 
 static int cmmk_try_determine_layout(struct cmmk *dev, int product)
 {
@@ -270,7 +242,8 @@ static int cmmk_try_determine_layout(struct cmmk *dev, int product)
 	}
 
 	switch ((enum cmmk_product) product) {
-		case CMMK_USB_MASTERKEYS_PRO_L: device_model = CMMK_PRODUCT_MASTERKEYS_PRO_L; break;
+		case CMMK_USB_MASTERKEYS_PRO_L:
+		case CMMK_USB_MASTERKEYS_PRO_L_WHITE: device_model = CMMK_PRODUCT_MASTERKEYS_PRO_L; break;
 		case CMMK_USB_MASTERKEYS_PRO_S: device_model = CMMK_PRODUCT_MASTERKEYS_PRO_S; break;
 		case CMMK_USB_MASTERKEYS_MK750: device_model = CMMK_PRODUCT_MASTERKEYS_MK750; break;
 		case CMMK_USB_MASTERKEYS_SK630: device_model = CMMK_PRODUCT_MASTERKEYS_SK630; break;
@@ -303,59 +276,72 @@ static int cmmk_try_determine_layout(struct cmmk *dev, int product)
  */
 int cmmk_attach(struct cmmk *dev, int product, int layout)
 {
-	if (libusb_init(&dev->cxt) != 0)
-		goto out_step0;
+	struct hid_device_info *list;
 
-	dev->dev = libusb_open_device_with_vid_pid(
-			dev->cxt,
-			CMMK_USB_VENDOR,
-			product);
+	list = hid_enumerate(CMMK_USB_VENDOR, product);
 
 	dev->product = product;
 
-	if (dev->dev == NULL)
-		goto out_step1;
-
-#ifndef WIN32 /* Kernel driver stuff doesn't exist on windows, so we skip it there. */
-	if (libusb_kernel_driver_active(dev->dev, CMMK_USB_INTERFACE))
-		if (libusb_detach_kernel_driver(dev->dev,  CMMK_USB_INTERFACE) != 0)
-			goto out_step2;
-#endif
-
-	if (libusb_claim_interface(dev->dev, CMMK_USB_INTERFACE) != 0)
-		goto out_step2;
-
-	if (layout < 0) {
-		if ((layout = cmmk_try_determine_layout(dev, product)) < 0) {
-			cmmk_detach(dev);
-
-			return CMMK_LAYOUT_DETECTION_FAILED;
+	for (struct hid_device_info *dev_info = list; dev_info != NULL; dev_info = dev_info->next) {
+		if (dev_info->interface_number != CMMK_USB_INTERFACE) {
+			continue;
 		}
+
+		dev->dev = hid_open_path(dev_info->path);
+
+		if (layout < 0) {
+			if ((layout = cmmk_try_determine_layout(dev, product)) < 0) {
+				hid_free_enumeration(list);
+				cmmk_detach(dev);
+
+				return CMMK_LAYOUT_DETECTION_FAILED;
+			}
+		}
+
+		break;
 	}
+	
+	hid_free_enumeration(list);
 
-	/*
-	 * Generate lookup map
-	 */
-	cmmk_force_layout(dev, layout);
+	if (dev->dev != NULL) {
+		/*
+		* Generate lookup map
+		*/
+		cmmk_force_layout(dev, layout);
 
-	dev->multilayer_mode = 0;
+		dev->multilayer_mode = 0;
 
-	return CMMK_OK;
+		return CMMK_OK;
+	} else {
+		return 1;
+	}
+}
 
-out_step2: libusb_close(dev->dev);
-out_step1: libusb_exit(dev->cxt);
-out_step0: return 1;
+int cmmk_attach_path(struct cmmk *dev, char const *path, int product, int layout)
+{
+	dev->dev = hid_open_path(path);
+
+	if (dev->dev != NULL) {
+		if (layout < 0) {
+			layout = cmmk_try_determine_layout(dev, product);
+		}
+
+		/*
+		* Generate lookup map
+		*/
+		cmmk_force_layout(dev, layout);
+
+		dev->multilayer_mode = 0;
+
+		return CMMK_OK;
+	} else {
+		return 1;
+	}
 }
 
 int cmmk_detach(struct cmmk *dev)
 {
-	libusb_release_interface(dev->dev, CMMK_USB_INTERFACE);
-#ifndef WIN32 /* Kernel driver stuff doesn't exist on windows, so we skip it there. */
-	libusb_attach_kernel_driver(dev->dev, CMMK_USB_INTERFACE);
-#endif
-
-	libusb_close(dev->dev);
-	libusb_exit(dev->cxt);
+	hid_close(dev->dev);
 
 	return CMMK_OK;
 }
@@ -392,7 +378,7 @@ int cmmk_force_layout(struct cmmk *dev, int layout)
 
 int cmmk_get_firmware_version(struct cmmk *dev, char *fw, size_t fwsiz)
 {
-	unsigned char data[64] = {0x01, 0x02};
+	unsigned char data[65] = { 0x01, 0x02 };
 	int r;
 
 	if ((r = send_command(dev->dev, data, sizeof(data))) != 0) {
@@ -450,6 +436,7 @@ const char * cmmk_product_to_str(int product)
 	switch ((enum cmmk_product) product) {
 		case CMMK_USB_MASTERKEYS_PRO_S: return "Cooler Master Masterkeys Pro S";
 		case CMMK_USB_MASTERKEYS_PRO_L: return "Cooler Master Masterkeys Pro L";
+		case CMMK_USB_MASTERKEYS_PRO_L_WHITE: return "Cooler Master Masterkeys Pro L White";
 		case CMMK_USB_MASTERKEYS_MK750: return "Cooler Master Masterkeys MK750";
 		case CMMK_USB_MASTERKEYS_SK630: return "Cooler Master Masterkeys SK630";
 		case CMMK_USB_MASTERKEYS_SK650: return "Cooler Master Masterkeys SK650";
@@ -998,6 +985,12 @@ int cmmk_set_single_key(struct cmmk *dev, int row, int col, struct rgb const *co
 
 	return cmmk_set_single_key_by_id(dev, key, color);
 }
+
+int cmmk_lookup_key_id(struct cmmk *dev, int row, int col)
+{
+	return cmmk_from_row_col(dev, row, col);
+}
+
 
 /*
  * Set the entire keyboard to the given color.

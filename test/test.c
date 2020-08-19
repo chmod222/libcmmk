@@ -141,7 +141,6 @@ int main(int argc, char** argv)
 	(void)argv;
 
 	struct cmmk state;
-	state.cxt = NULL;
 
 	int product;
 

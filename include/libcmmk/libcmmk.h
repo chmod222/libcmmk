@@ -17,7 +17,9 @@
 #ifndef LIBCMMK_H
 #define LIBCMMK_H
 
-#include <libusb-1.0/libusb.h>
+#include <hidapi/hidapi.h>
+
+#include <stdint.h>
 
 #if defined(__cplusplus)
 extern "C" {
@@ -61,6 +63,7 @@ enum cmmk_result {
  */
 enum cmmk_product {
 	CMMK_USB_MASTERKEYS_PRO_L = 0x003b,
+	CMMK_USB_MASTERKEYS_PRO_L_WHITE = 0x0047,
 	CMMK_USB_MASTERKEYS_PRO_S = 0x003c,
 	CMMK_USB_MASTERKEYS_MK750 = 0x0067,
 	CMMK_USB_MASTERKEYS_SK630 = 0x0089,
@@ -156,13 +159,12 @@ enum cmmk_product_type {
 	CMMK_PRODUCT_MASTERKEYS_SK650,
 };
 
-
 /*
  * Attach to and detach from USB device
  */
 struct cmmk {
-	libusb_context *cxt;
-	libusb_device_handle *dev;
+	/* libusb_context *cxt; */
+	hid_device *dev;
 
 	/*
 	 * Internal product IDs that are not all that useful outside the library.
@@ -280,6 +282,7 @@ int cmmk_find_device(int *product);
  * If layout autodetection fails, 1 is returned and cmmk_detach is called implicitely.
  */
 int cmmk_attach(struct cmmk *dev, int product, int layout);
+int cmmk_attach_path(struct cmmk *dev, char const *path, int product, int layout);
 int cmmk_detach(struct cmmk *dev);
 
 /* Resets the layout to the given ID and regenerates lookup tables */
@@ -394,12 +397,11 @@ int cmmk_set_single_key_by_id(struct cmmk *dev, int key, struct rgb const *color
  * Set the single key in row `row` and column `col` to the given color.
  */
 int cmmk_set_single_key(struct cmmk *dev, int row, int col, struct rgb const *color);
-
+int cmmk_lookup_key_id(struct cmmk *dev, int row, int col);
 /*
  * Set the entire keyboard to the given color.
  */
 int cmmk_set_all_single(struct cmmk *dev, struct rgb const *col);
-
 /*
  * Set the entire keyboard in one step from the given map.
  *
