@@ -25,10 +25,14 @@
 extern "C" {
 #endif
 
+#define BYTE_SIZE     8
+
 #define CMMK_ROWS_MAX 7
 #define CMMK_COLS_MAX 22
 
-#define CMMK_KEYLIST_SIZE 256
+#define CMMK_FW_SIZE        16
+#define CMMK_KEYLIST_SIZE   256
+#define CMMK_BUFFER_SIZE    65
 
 /*
  * If we have C99 support (which we do, because libusb-1.0 requires it...), define some handy
@@ -62,30 +66,31 @@ enum cmmk_result {
  * Physical USB product IDs for general device type detection only.
  */
 enum cmmk_product {
-	CMMK_USB_MASTERKEYS_PRO_L = 0x003b,
-	CMMK_USB_MASTERKEYS_PRO_L_WHITE = 0x0047,
-	CMMK_USB_MASTERKEYS_PRO_S = 0x003c,
-	CMMK_USB_MASTERKEYS_MK750 = 0x0067,
-	CMMK_USB_MASTERKEYS_SK630 = 0x0089,
-	CMMK_USB_MASTERKEYS_SK650 = 0x008d,
+    CMMK_USB_MASTERKEYS_PRO_L = 0x003b,
+    CMMK_USB_MASTERKEYS_PRO_L_WHITE = 0x0047,
+    CMMK_USB_MASTERKEYS_PRO_S = 0x003c,
+    CMMK_USB_MASTERKEYS_MK750 = 0x0067,
+    CMMK_USB_MASTERKEYS_SK630 = 0x0089,
+    CMMK_USB_MASTERKEYS_SK650 = 0x008d,
 };
 
 /*
  * The specific layout of a given device.
  */
 enum cmmk_layout {
-	CMMK_LAYOUT_US_S,
-	CMMK_LAYOUT_US_L, /* TODO */
-	CMMK_LAYOUT_US_MK750, /* TODO */
-	CMMK_LAYOUT_US_SK630, /* TODO */
-	CMMK_LAYOUT_US_SK650, /* TODO */
-	CMMK_LAYOUT_EU_S, /* TODO */
-	CMMK_LAYOUT_EU_L,
-	CMMK_LAYOUT_EU_MK750,
-	CMMK_LAYOUT_EU_SK630,
-	CMMK_LAYOUT_EU_SK650,
-
-	CMMK_LAYOUT_INVAL /* end marker */
+    CMMK_LAYOUT_US_L,
+    CMMK_LAYOUT_US_L_WHITE,
+    CMMK_LAYOUT_US_S,
+    CMMK_LAYOUT_US_MK750, /* TODO empty keymap */
+    CMMK_LAYOUT_US_SK630,
+    CMMK_LAYOUT_US_SK650, /* TODO empty keymap */
+    CMMK_LAYOUT_EU_L,
+    CMMK_LAYOUT_EU_L_WHITE,
+    CMMK_LAYOUT_EU_S,
+    CMMK_LAYOUT_EU_MK750,
+    CMMK_LAYOUT_EU_SK630,
+    CMMK_LAYOUT_EU_SK650,
+    CMMK_LAYOUT_INVAL /* end marker */
 };
 
 /* Apparently can be anything in range [0x00, 0x50].
@@ -147,16 +152,17 @@ enum cmmk_effect_id {
  * most of the time, library users really want the model and layout information separated,
  * these two helpers abstract it away a bit. */
 enum cmmk_layout_type {
-	CMMK_LAYOUT_TYPE_ANSI,
-	CMMK_LAYOUT_TYPE_ISO
+    CMMK_LAYOUT_TYPE_ANSI,
+    CMMK_LAYOUT_TYPE_ISO
 };
 
 enum cmmk_product_type {
-	CMMK_PRODUCT_MASTERKEYS_PRO_L,
-	CMMK_PRODUCT_MASTERKEYS_PRO_S,
-	CMMK_PRODUCT_MASTERKEYS_MK750,
-	CMMK_PRODUCT_MASTERKEYS_SK630,
-	CMMK_PRODUCT_MASTERKEYS_SK650,
+    CMMK_PRODUCT_MASTERKEYS_PRO_L,
+    CMMK_PRODUCT_MASTERKEYS_PRO_L_WHITE,
+    CMMK_PRODUCT_MASTERKEYS_PRO_S,
+    CMMK_PRODUCT_MASTERKEYS_MK750,
+    CMMK_PRODUCT_MASTERKEYS_SK630,
+    CMMK_PRODUCT_MASTERKEYS_SK650,
 };
 
 /*
