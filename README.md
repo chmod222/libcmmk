@@ -1,3 +1,12 @@
+# DEPRECATION NOTICE
+This repository is unmaintained and has been for quite some time. The author has moved on to new
+hardware and off GitHub for the most part, so this repository will stay frozen in time. No further
+development should be expected.
+
+Anyone out there who still finds this project useful should feel free to start a new authoritative
+fork.
+
+# libcmmk: Unofficial Cooler Master MasterKey Control Library
 An unofficial implementation of the Masterkey Lighting API that can be used
 to programmatically control LEDs of Coolermaster Masterkey keyboards.
 
@@ -8,7 +17,7 @@ For an implementation of this library usable for people who do not want to drop 
 to configure their devices under Linux, see the separate [cmmk_ctrl](https://github.com/chmod222/cmmk_ctrl)
 project.
 
-# Device Support
+## Device Support
 The currently supported and known to work devices include:
 
  * MasterKeys Pro L, (US & EU / German)
@@ -21,7 +30,7 @@ In theory (and as a goal), this library should support any RGB (and in the futur
 MasterKeys keyboards. Gaps in device support are currently a result of a lack of test devices. See
 the "Contributing" section if you would like to help in this regard.
 
-# Implemented features:
+## Implemented features:
   - Profile customization (comparable to the official control software)
     * Switching between P1 - P4
     * Configuring effects
@@ -34,7 +43,7 @@ the "Contributing" section if you would like to help in this regard.
     * Set individual keys
     * Activate and configure effects active during manual control
 
-# Contributing
+## Contributing
 Pull requests for new model support, bug fixes or anything else are always appreciated. If your
 keyboard model and layout (ISO/ANSI) combination is not among the supported devices and you want
 to help out, feel free to open an issue to let me know.
@@ -46,7 +55,7 @@ from other models to try and decipher the remaining packets.
 So if you know you way around Wireshark and usbmon or similar capture tools, feel free to record 
 some samples and open a new issue for them.
 
-# Installation
+## Installation
 If you're using Arch Linux, you can [find `libcmmk` in the
 AUR](https://aur.archlinux.org/packages/libcmmk-git/). Depending on your AUR helper (e.g.
 [yay](https://github.com/Jguer/yay)), you can install it with:
@@ -55,7 +64,7 @@ AUR](https://aur.archlinux.org/packages/libcmmk-git/). Depending on your AUR hel
 yay -S libcmmk-git
 ```
 
-# Build requirements:
+## Build requirements:
   - A C compiler from at least the current century (C99)
   - libusb-1.0
   - cmake 3.0
