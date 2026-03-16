@@ -25,10 +25,13 @@
 extern "C" {
 #endif
 
+#define BYTE_SIZE     8
+
 #define CMMK_ROWS_MAX 7
 #define CMMK_COLS_MAX 22
 
 #define CMMK_KEYLIST_SIZE 256
+#define CMMK_BUFFER_SIZE  65
 
 /*
  * If we have C99 support (which we do, because libusb-1.0 requires it...), define some handy
