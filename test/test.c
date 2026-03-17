@@ -103,9 +103,9 @@ int test_multilayer(struct cmmk *dev)
 	cmmk_set_control_mode(dev, CMMK_EFFECT);
 
 	cmmk_switch_multilayer(dev, 1);
-		cmmk_set_effect_fully_lit(dev, &f);
-		cmmk_set_effect_wave(dev, &w);
-		cmmk_set_effect_raindrops(dev, &r);
+	cmmk_set_effect_fully_lit(dev, &f);
+	cmmk_set_effect_wave(dev, &w);
+	cmmk_set_effect_raindrops(dev, &r);
 	cmmk_switch_multilayer(dev, 0);
 
 	cmmk_set_multilayer_map(dev, &map);
